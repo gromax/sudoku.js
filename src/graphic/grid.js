@@ -25,12 +25,6 @@ class GGrid {
         
     }
 
-    attachSelector(selector) {
-        for (let c of this.#cells){
-            c.attachSelector(selector);
-        }
-    }
-
 }
 
 export { GGrid };

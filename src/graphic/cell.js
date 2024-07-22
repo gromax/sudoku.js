@@ -22,11 +22,6 @@ class GCell {
         return this;
     }
 
-    attachSelector(selector) {
-        let line = this.#line;
-        let col = this.#col;
-        this.#back.click(function(){ selector.clickCell(line, col); });
-    }
 }
 
 export { GCell };
