@@ -113,7 +113,7 @@ class Contour {
             continue;
          }
          output.push(current);
-         current = [];
+         current = [s];
       }
       if (current.length > 0) {
          output.push(current);
@@ -146,10 +146,11 @@ class Contour {
          xyValues.push(x);
          xyValues.push(y);
       }
-      return xyValues;
+
+      return xyValues.join(',');
    }
 
-   getPath(size, margin) {
+   getPaths(size, margin) {
       let paths = this.#cut();
       let output = [];
       for (let i=0; i<paths.length; i++) {
