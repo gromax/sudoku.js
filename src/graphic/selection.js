@@ -7,9 +7,13 @@ class Selection {
 
     #group;
     #states;
+    #selectAddMode;
+    #selectBorderMode;
     constructor(parent) {
         this.#group = parent.nested();
         this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
+        this.#selectAddMode = false;
+        this.#selectBorderMode = false;
     }
 
     #draw() {
@@ -80,10 +84,34 @@ class Selection {
         return this;
     }
 
-    clickCell(line, col) {
-        this.toggle(line, col);
+    clickEvent(e) {
+        let col = Math.floor(e.offsetX/CELLSIZE);
+        let line = Math.floor(e.offsetY/CELLSIZE);
+        if (this.#selectAddMode) {
+            this.toggle(line, col);
+        } else {
+            this.clear();
+            this.add(line, col);
+        }
     }
 
+    selectMode(seton) {
+        if (seton === true) {
+            this.#selectAddMode = true;
+            this.#selectBorderMode = false;
+        } else {
+            this.#selectAddMode = false;
+        }
+    }
+
+    selectBorderMode(seton) {
+        if (seton === true) {
+            this.#selectBorderMode = true;
+            this.#selectAddMode = false;
+        } else {
+            this.#selectAddMode = false;
+        }
+    }
 
 }
 
