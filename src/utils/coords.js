@@ -21,6 +21,10 @@ class Coords {
     get col() {
         return this.#x;
     }
+
+    get xy() {
+        return [this.#x, this.#y];
+    }
 }
 
 export { Coords };
