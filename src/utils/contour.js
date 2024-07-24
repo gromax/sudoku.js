@@ -60,7 +60,7 @@ class Contour {
       for (let i=0; i<coords.length; i++) {
          let c = coords[i];
          if ((typeof c == 'object') && (c.constructor.name == 'Coords')) {
-            [line,col] = c.xy;
+            [col,line] = c.xy;
          } else {
             [line, col] = coords[i];
          }
