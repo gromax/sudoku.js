@@ -58,7 +58,12 @@ class Contour {
       let line, col;
       this.#segments = Array();
       for (let i=0; i<coords.length; i++) {
-         [line, col] = coords[i];
+         let c = coords[i];
+         if ((typeof c == 'object') && (c.constructor.name == 'Coords')) {
+            [line,col] = c.xy;
+         } else {
+            [line, col] = coords[i];
+         }
          this.#addSquare(col,line);
       }
    }
@@ -121,7 +126,7 @@ class Contour {
       return output;
    }
 
-   #getOnePath(path, size, margin){
+   #getOnePath(path, margin){
       if (path.length <4) {
          return [];
       }
@@ -131,8 +136,8 @@ class Contour {
          let s = path[i];
          let sdir = s.dir;
          let precsdir = path[(i-1+N)%N].dir;
-         let x = s.xdeb*size;
-         let y = s.ydeb*size;
+         let x = s.xdeb;
+         let y = s.ydeb;
          if ((sdir==DIRECTION.UP) || (precsdir==DIRECTION.UP)) {
             x += margin;
          } else if((sdir==DIRECTION.DOWN) || (precsdir==DIRECTION.DOWN)) {
@@ -147,14 +152,14 @@ class Contour {
          xyValues.push(y);
       }
 
-      return xyValues.join(',');
+      return xyValues;
    }
 
-   getPaths(size, margin) {
+   getPaths(margin) {
       let paths = this.#cut();
       let output = [];
       for (let i=0; i<paths.length; i++) {
-         output.push(this.#getOnePath(paths[i], size, margin));
+         output.push(this.#getOnePath(paths[i], margin));
       }
       return output;
    }
