@@ -2,6 +2,8 @@
 
 import _ from 'lodash';
 
+import { Contour } from '../utils/contour';
+
 class Canvas {
     #group;
     #unit;
@@ -12,12 +14,32 @@ class Canvas {
         this.#marge = marge;
     }
 
-    unitToValue(u) {
-        return (u+this.#marge)*this.#unit;
+    color(code) {
+        switch(code) {
+            case 'b': return '#36f'; // bleu
+            case 'r': return '#b00'; // rouge
+            case 'p': return '#ff33cc'; // purple
+            case 'o': return '#ff6600'; // orange
+            case 'y': return '#ffcc00'; // yellow
+            case '_': return '#aaa'; // gris
+            case 'v': return '#90c'; // violet
+            case 'w': return '#fff'; // white
+            case 'g': return '#690'; // green
+            case 't': return '#0ff'; // turquoise
+            case 'm': return '#960'; // marron
+            default: return '#000';
+        }
     }
 
-    coordToArray(c) {
-        return [this.unitToValue(c.x), this.unitToValue(c.y)];
+    unitToValue(u) {
+        if (Array.isArray(u)) {
+            let that = this;
+            return _.map(u, function(v){ return that.unitToValue(v); });
+        }
+        if ((typeof u == 'object') && (u.constructor.name == 'Coords')) {
+            return this.unitToValue([u.x, u.y]);
+        }
+        return (u+this.#marge)*this.#unit;
     }
 
     rect(line, col, size) {
@@ -33,8 +55,6 @@ class Canvas {
     }
 
     line(coords) {
-        let line;
-
         if (typeof coords == 'string') {
             return this.#group.polyline(coords);
         }
@@ -44,16 +64,32 @@ class Canvas {
         if (coords.length == 0) {
             return this.#group.polyline('');
         }
-        let xyValues;
-        if ((typeof coords[0] == 'object')&&(coords[0].constructor.name == "Coords")) {
-            let that = this;
-            xyValues = _.map(coords, function(c){ return that.coordToArray(c); });
-        } else {
-            let that = this;
-            xyValues = _.map(coords, function(c){ return [that.unitToValue(c[0]), that.unitToValue(c[1])]; });
-        }
-        
+        let xyValues = this.unitToValue(coords);
         return this.#group.polyline(xyValues);
+    }
+
+    polygon(coords) {
+        if (typeof coords == 'string') {
+            return this.#group.polygon(coords);
+        }
+        if (!Array.isArray(coords)) {
+            throw new Error('coords: mauvais type');
+        }
+        if (coords.length == 0) {
+            return this.#group.polygon('');
+        }
+        let xyValues = this.unitToValue(coords);
+        return this.#group.polygon(xyValues);
+    }
+
+    cadre(coords) {
+        if (!Array.isArray(coords) || (coords.length ==0)) {
+            throw new Error('coords: mauvais format');
+        }
+        let c = new Contour(coords);
+        let paths = c.getPaths(0.1);
+        let that = this;
+        return _.map(paths, function(p){ return that.polygon(p); });
     }
 }
 
