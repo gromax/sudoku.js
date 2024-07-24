@@ -49,8 +49,12 @@ class Canvas {
     }
 
     disc(line, col, size=0.75) {
+        /* line, col: positions du centre du disque
+           size: diamètre
+           dessine un disque
+        */
         let d = this.#group.circle(size*this.#unit, size*this.#unit);
-        d.move((col+(1-size)/2+this.#marge)*this.#unit, (line+(1-size)/2+this.#marge)*this.#unit);
+        d.move((col-size/2+this.#marge)*this.#unit, (line-size/2+this.#marge)*this.#unit);
         return d;
     }
 
@@ -66,6 +70,18 @@ class Canvas {
         }
         let xyValues = this.unitToValue(coords);
         return this.#group.polyline(xyValues);
+    }
+
+    text(chaine, coord) {
+        let [x, y] = this.unitToValue(coord);
+        let subgroup = this.#group.nested();
+        let textSvg = subgroup.text(chaine).fill('#000');
+        subgroup.move(x, y);
+        let box = textSvg.node.getBBox();
+        textSvg.dmove(2, box.height);
+        let rect = subgroup.rect(box.width+4, box.height+4).fill('#fff');
+        rect.after(textSvg);
+        return subgroup;
     }
 
     polygon(coords) {
