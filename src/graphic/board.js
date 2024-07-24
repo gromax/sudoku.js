@@ -26,7 +26,7 @@ class Board {
     }
 
     #parse_commande(commande) {
-        let r = new RegExp("^(?<height>[1-9][0-9]*)(x(?<width>[1-9][0-9]*))?(?<type>S)?:(?<coms>.*)$", "gi");
+        let r = new RegExp("^(?<height>[1-9][0-9]*)(x(?<width>[1-9][0-9]*))?(?<type>S)?:(?<coms>.*)$", "g");
         let matchs = r.exec(commande);
         if (matchs === null){
             throw new Error("Commande invalide");
@@ -51,12 +51,18 @@ class Board {
             if (this.#tryThermo(com)) {
                 continue;
             }
+            if (this.#tryThickCenterLine(com)) {
+                continue;
+            }
+            if (this.#tryDotCage(com)) {
+                continue;
+            }
             console.log(com + " ne donne rien")
         }
     }
 
     #getCoords(chaine) {
-        let r2 = new RegExp("([A-Z])([0-9]+)", "gi");
+        let r2 = new RegExp("([A-Z])([0-9]+)", "g");
         let points = chaine.match(r2);
         if (points === null) {
             throw new Error(chaine + ": pas une chaine de coordonnées valide");
@@ -72,19 +78,44 @@ class Board {
     }
 
     #tryThermo(com) {
-        let r = new RegExp("^Th(?<chaine>([A-Z][0-9]+)+)$", "gi");
+        let r = new RegExp("^Th(?<chaine>([A-Z][0-9]+)+)(?<color>[a-zA-Z_])?$", "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
         }
         let coords = this.#getCoords(m.groups.chaine);
-        this.#canvas.disc(coords[0].line, coords[0].col).fill('#aaa').stroke('none');
-        this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:'#aaa'}).dmove(this.#cellsize/2, this.#cellsize/2);
+        let color = this.#canvas.color(m.groups.color || '_');
+        this.#canvas.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
+        this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color}).dmove(this.#cellsize/2, this.#cellsize/2);
         return true;
     }
 
+    #tryThickCenterLine(com){
+        let r = new RegExp("^Tcl(?<chaine>([A-Z][0-9]+)+)(?<color>[a-zA-Z_])?$", "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
+        }
+        let coords = this.#getCoords(m.groups.chaine);
+        let color = this.#canvas.color(m.groups.color || '_');
+        this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color}).dmove(this.#cellsize/2, this.#cellsize/2);
+        return true;
+    }
 
-
+    #tryDotCage(com){
+        let r = new RegExp("^Dc(?<chaine>([A-Z][0-9]+)+)(?<color>[a-zA-Z_])?$", "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
+        }
+        let coords = this.#getCoords(m.groups.chaine);
+        let color = this.#canvas.color(m.groups.color || '_');
+        let polygons = this.#canvas.cadre(coords);
+        for (let pol of polygons) {
+            pol.fill('none').stroke({width:3, color:color}).attr('stroke-dasharray', '10');
+        }
+        return true;
+    }
 
     #drawGrid() {
         for (let line=0; line<this.#height; line++) {
