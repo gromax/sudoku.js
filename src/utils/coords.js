@@ -1,36 +1,57 @@
 /* Objet contenant une paire de coordonnées */
 
+import _ from 'lodash';
+
 class Coords {
     #x;
     #y;
+    static REGEX = "[A-Za-z][A-Za-z]"
 
-    static strToCoords(chaine, border=false) {
-        /* chaine est une suite de forme A3B5C4
-           Une lettre majuscule indique que l'on veut une coordonnée au centre de la case.
-           Une lettre minuscule indique que l'on veut une coordonnée au coin sup gauche
-           border: ignoré majuscule/minuscule et toujours prendre la coordonnée au coin sup gauche
-           renvoie un tableau de Coords
+    static strToCoords(chaine) {
+        /* chaine est une suite de forme ABbDCa
+           une paire de coordonnées est formée de deux lettres
+           renvoie un tableau de Coords correspondant
         */
-        let r2 = new RegExp("([A-Za-z])([0-9]+)", "g");
-        let points = chaine.match(r2);
-        if (points === null) {
-            throw new Error(chaine + ": pas une chaine de coordonnées valide");
+        let n = chaine.length;
+        if (n%2 != 0) {
+            throw new Error(`chaine = ${chaine} n'est pas valide`);
         }
         let output = [];
-        let delta = border?0:0.5;
-        for (let p of points) {
-            let car = p.charAt(0);
-            if (car.toUpperCase() == car) {
-                let line = p.charCodeAt(0) - 65 + delta;
-                let colonne =  parseInt(p.substring(1)) + delta;
-                output.push(new Coords(colonne, line));
-            } else {
-                let line = p.charCodeAt(0) - 97;
-                let colonne =  parseInt(p.substring(1));
-                output.push(new Coords(colonne, line));
-            }
+        for (let i=0; i<n; i+=2) {
+            output.push(Coords.paireToCoord(chaine.substring(i,i+2)));
         }
         return output;
+    }
+
+    static paireToCoord(paire) {
+        /* paire = chaine de deux lettres alphabétiques, minuscule ou minuscules
+           a = -1 ; A = -0.5
+           b = 0 ; B = 0.5
+           etc.
+           La première pour la ligne (y), la seconde pour la colonne (x)
+           renvoie la coordonnée correspondante
+        */
+        if (paire.length != 2) {
+            throw new Error(`paire = ${paire} n'est pas valide`);
+        }
+        let [y, x] = _.map(paire, Coords.letterToValue);
+        return new Coords(x, y);
+    }
+
+    static letterToValue(letter) {
+        if (letter.length != 1) {
+            throw new Error(`letter = ${letter} n'est pas valide`);
+        }
+        let Letter = letter.toUpperCase();
+        let value = Letter.charCodeAt(0) - 65;
+        if ((value < 0) || (value>25)) {
+            throw new Error(`letter = ${letter} n'est pas valide`);
+        }
+        if (letter == Letter) {
+            return value -0.5;
+        } else {
+            return value-1;
+        }
     }
 
     constructor(x,y) {
