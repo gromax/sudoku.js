@@ -56,10 +56,13 @@ class Board {
             if (this.#tryThermo(com)) {
                 continue;
             }
-            if (this.#tryThickLine(com)) {
+            if (this.#tryLine(com)) {
                 continue;
             }
             if (this.#tryDotCage(com)) {
+                continue;
+            }
+            if (this.#tryDigit(com)) {
                 continue;
             }
             console.log(com + " ne donne rien")
@@ -68,10 +71,12 @@ class Board {
 
     #tryThermo(com) {
         /* 
-          Thermomomètre. exemple :ThA3A5B5g
-          A3A5B5: donne le chemin (voir Coords.strToCoords) et g[optionnel] est la couleur (voir Canvas.color)
+          Thermomomètre. exemple :ThBCDEBa:g
+            Th signe la commande
+            BCDEBa est le chemin
+            :g, optionnel, précise une couleur
         */
-        let r = new RegExp("^Th(?<chaine>([A-Za-z][0-9]+)+)(?<color>[a-zA-Z_])?$", "g");
+        let r = new RegExp(`^Th(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
@@ -83,35 +88,39 @@ class Board {
         return true;
     }
 
-    #tryThickLine(com){
+    #tryLine(com){
         /* 
-          Ligne épaisse. exemple :TlA3A5B5g
-          A3A5B5: donne le chemin (voir Coords.strToCoords) et g[optionnel] est la couleur (voir Canvas.color)
+          Ligne. exemple :LiBCDEBa:g
+            Li signe la commande ou li pour un trait plus fin
+            BCDEBa est le chemin
+            :g, optionnel, précise la couleur
         */
-        let r = new RegExp("^Tl(?<chaine>([A-Za-z][0-9]+)+)(?<color>[a-zA-Z_])?$", "g");
+        let r = new RegExp(`^[Ll]i(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
         }
+        let w = (com[0]=='L') ? this.#cellsize/4 : this.#cellsize/8;
         let coords = Coords.strToCoords(m.groups.chaine);
         let color = this.#canvas.color(m.groups.color || '_');
-        this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
+        this.#canvas.line(coords).fill('none').stroke({width:w, color:color});
         return true;
     }
 
     #tryDotCage(com){
         /* 
-          Cage. exemple :Dce5f5f6-p
-          DcE5F5F6: donne le chemin (voir Coords.strToCoords) et p[optionnel] est la couleur (voir Canvas.color)
-          -: optionnel, pour un trait continu
-          tag: étiquette optionnelle, toujours en haut à gauche de la première case
+          Cage. exemple :Dceefeff:g-{tag}
+            Dc: signe la commande
+            eefeff: cases concernées, tout en minuscules
+            :g, optionnel, donne la couleur
+            {tag}, optionnel, donne l'étiquette
         */
-        let r = new RegExp("^Dc(?<chaine>([A-Za-z][0-9]+)+)(?<continu>-)?(?<color>[a-zA-Z_])?(#\{(?<tag>[^;]*)\})?$", "g");
+        let r = new RegExp(`^Dc(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?(?<continu>-)?(\{(?<tag>[^;]*)\})?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
         }
-        let coords = Coords.strToCoords(m.groups.chaine);
+        let coords = Coords.strToCoords(m.groups.chaine.toLowerCase());
         let color = this.#canvas.color(m.groups.color || '_');
         let polygons = this.#canvas.cadre(coords);
         for (let pol of polygons) {
@@ -121,22 +130,31 @@ class Board {
             }
         }
         if (m.groups.tag) {
-            let text = this.#canvas.text(m.groups.tag, coords[0]);
-            text.dmove(-.5,-.5);
+            let text = this.#canvas.text(m.groups.tag, coords[0], 0.5, 0.25);
             let [subrec, subtext] = text.children();
             subrec.stroke(color);
             subtext.fill(color);
         }
-      
         return true;
     }
 
     #tryDigit(com){
         /*
           Écriture d'un chiffre simple
-          ne4E8_g: [ne le point cardinal], 4 le digit, E8 sa position, [_ avec un cadre et fond blanc][g sa couleur]
+          4EG:g: 4 le digit, E8 sa position, [:g sa couleur]
         */
-        let r = new RegExp("^Dc(?<chaine>([A-Za-z][0-9]+)+)(?<continu>-)?(?<color>[a-zA-Z_])?$", "g");
+        let r = new RegExp(`^(?<digit>[0-9])(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]))?$`, "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
+        }
+        let color = this.#canvas.color(m.groups.color || '_');
+        let coord = Coords.paireToCoord(m.groups.pos);
+        let text = this.#canvas.text(m.groups.digit, coord, 0.8, 0.8, 'C');
+        let [subrec, subtext] = text.children();
+        subrec.fill('none').stroke('none');
+        subtext.fill(color);
+        return true;
     }
 
     #drawGrid() {
