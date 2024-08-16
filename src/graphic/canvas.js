@@ -4,6 +4,19 @@ import _ from 'lodash';
 
 import { Contour } from '../utils/contour';
 
+class Text {
+    #isnested;
+    #background;
+    #textnode;
+    #group;
+    constructor(parent, text, backgroundColor=null) {
+        if (backgroundColor === null) {
+            
+        }
+
+    }
+}
+
 class Canvas {
     #group;
     #unit;
@@ -72,15 +85,30 @@ class Canvas {
         return this.#group.polyline(xyValues);
     }
 
-    text(chaine, coord) {
+    text(chaine, coord, width, height, anchor="NE") {
         let [x, y] = this.unitToValue(coord);
         let subgroup = this.#group.nested();
         let textSvg = subgroup.text(chaine).fill('#000');
         subgroup.move(x, y);
         let box = textSvg.node.getBBox();
-        textSvg.dmove(2, box.height);
-        let rect = subgroup.rect(box.width+4, box.height+4).fill('#fff');
+        let factor = Math.min(width*this.#unit/box.width, height*this.#unit/box.height);
+        textSvg.dmove(2, box.height-2);
+        let rect = subgroup.rect(box.width+4, box.height+2).fill('#fff');
         rect.after(textSvg);
+        rect.scale(factor,0,0);
+        textSvg.scale(factor,0,0);
+        let w = (box.width+4)*factor;
+        let h = (box.height+2)*factor;
+        switch (anchor) {
+            case "N": subgroup.dmove(-w/2,0); break;
+            case "S": subgroup.dmove(-w/2,-h); break;
+            case "E": subgroup.dmove(0,-h/2); break;
+            case "W": subgroup.dmove(-w,-h/2); break;
+            case "NW": subgroup.dmove(-w,0); break;
+            case "SW": subgroup.dmove(-w,-h); break;
+            case "SE": subgroup.dmove(0,-h); break;
+            case "C": subgroup.dmove(-w/2,-h/2); break;
+        }
         return subgroup;
     }
 
