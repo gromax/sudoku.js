@@ -5,7 +5,7 @@ import _ from 'lodash';
 class Coords {
     #x;
     #y;
-    static REGEX = "[A-Za-z][A-Za-z]"
+    static REGEX = "[A-Za-z][A-Za-z0-9]"
 
     static strToCoords(chaine) {
         /* chaine est une suite de forme ABbDCa
@@ -28,6 +28,7 @@ class Coords {
            a = -1 ; A = -0.5
            b = 0 ; B = 0.5
            etc.
+           La 2e peut-être un digit 0-9
            La première pour la ligne (y), la seconde pour la colonne (x)
            renvoie la coordonnée correspondante
         */
@@ -41,6 +42,9 @@ class Coords {
     static letterToValue(letter) {
         if (letter.length != 1) {
             throw new Error(`letter = ${letter} n'est pas valide`);
+        }
+        if (!isNaN(letter)) {
+            return parseInt(letter)+0.5;
         }
         let Letter = letter.toUpperCase();
         let value = Letter.charCodeAt(0) - 65;
