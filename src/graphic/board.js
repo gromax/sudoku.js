@@ -65,7 +65,10 @@ class Board {
             if (this.#tryDigit(com)) {
                 continue;
             }
-            console.log(com + " ne donne rien")
+            if (this.#tryTag(com)) {
+                continue;
+            }
+            console.log(com + " ne donne rien");
         }
     }
 
@@ -82,7 +85,7 @@ class Board {
             return false;
         }
         let coords = Coords.strToCoords(m.groups.chaine);
-        let color = this.#canvas.color(m.groups.color || '_');
+        let color = Canvas.color(m.groups.color || '_');
         this.#canvas.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
         this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
         return true;
@@ -102,7 +105,7 @@ class Board {
         }
         let w = (com[0]=='L') ? this.#cellsize/4 : this.#cellsize/8;
         let coords = Coords.strToCoords(m.groups.chaine);
-        let color = this.#canvas.color(m.groups.color || '_');
+        let color = Canvas.color(m.groups.color || '_');
         this.#canvas.line(coords).fill('none').stroke({width:w, color:color});
         return true;
     }
@@ -121,7 +124,7 @@ class Board {
             return false;
         }
         let coords = Coords.strToCoords(m.groups.chaine.toLowerCase());
-        let color = this.#canvas.color(m.groups.color || '_');
+        let color = Canvas.color(m.groups.color || '_');
         let polygons = this.#canvas.cadre(coords);
         for (let pol of polygons) {
             pol.fill('none').stroke({width:3, color:color});
@@ -130,10 +133,8 @@ class Board {
             }
         }
         if (m.groups.tag) {
-            let text = this.#canvas.text(m.groups.tag, coords[0], 0.5, 0.25);
-            let [subrec, subtext] = text.children();
-            subrec.stroke(color);
-            subtext.fill(color);
+            let text = this.#canvas.text(m.groups.tag, coords[0], 0.3);
+            text.stroke(color).fill('#fff');
         }
         return true;
     }
@@ -148,13 +149,50 @@ class Board {
         if (m === null) {
             return false;
         }
-        let color = this.#canvas.color(m.groups.color || '_');
+        let color = Canvas.color(m.groups.color || '_');
         let coord = Coords.paireToCoord(m.groups.pos);
-        let text = this.#canvas.text(m.groups.digit, coord, 0.8, 0.8, 'C');
-        let [subrec, subtext] = text.children();
-        subrec.fill('none').stroke('none');
-        subtext.fill(color);
+        let text = this.#canvas.text(m.groups.digit, coord, 0.8);
+        text.anchor('C');
+        text.stroke(color);
+        text.fill('none');
         return true;
+    }
+
+    #tryTag(com){
+        /*
+        Écriture d'un texte, Tag{tag}Ee:gb.NEh45r90
+          Tag: signature de la commande
+          {tag}: texte affiché
+          Ee: position
+          :gb, optionnels, couleurs du texte (et bordure le cas échéant) et du fond
+            (si pas de fond, transparent)
+          .NE, ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
+          h45: optionnel, hauteur (ou largeur) en pourcents (h ou w)
+          rR: optionel, rotation Right (R, L, D pour demi tour)
+        */
+        let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D)))?$`, "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
+        }
+        let stringColor = m.groups.color || '_';
+        let color = Canvas.color(stringColor[0]);
+        let backColor = (stringColor.length == 2)? Canvas.color(stringColor[1]) : 'none';
+        let anchor = m.groups.anchor || 'C';
+        let stringSize = m.groups.size || 'h99';
+        let size = parseInt(stringSize.substring(1))/100;
+        let coord = Coords.paireToCoord(m.groups.pos);
+        let angle = m.groups.angle || '0';
+        let text = this.#canvas.text(m.groups.tag, coord, size);
+        text.stroke(color).fill(backColor);
+        text.anchor(anchor);
+        switch(angle) {
+            case 'R': text.turnClockWise(); break;
+            case 'L': text.turnCounterClockWise(); break;
+            case 'D': text.turnClockWise().turnClockWise(); break;
+        }
+        return true;
+
     }
 
     #drawGrid() {
