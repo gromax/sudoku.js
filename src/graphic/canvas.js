@@ -15,6 +15,10 @@ class Canvas {
         this.#marge = marge;
     }
 
+    sublayer() {
+        return new Canvas(this.#group, this.#unit, this.#marge);
+    }
+
     static color(code) {
         switch(code) {
             case 'b': return '#36f'; // bleu
@@ -44,7 +48,7 @@ class Canvas {
         return (u+this.#marge)*this.#unit;
     }
 
-    rect(line, col, size) {
+    square(line, col, size) {
         let c = this.#group.rect(size*this.#unit, size*this.#unit);
         c.move((col+this.#marge)*this.#unit, (line+this.#marge)*this.#unit);
         return c;
@@ -95,14 +99,26 @@ class Canvas {
         return this.#group.polygon(xyValues);
     }
 
-    cadre(coords) {
+    cadre(coords, margin) {
         if (!Array.isArray(coords) || (coords.length ==0)) {
             throw new Error('coords: mauvais format');
         }
         let c = new Contour(coords);
-        let paths = c.getPaths(0.1);
+        let paths = c.getPaths(margin);
         let that = this;
         return _.map(paths, function(p){ return that.polygon(p); });
+    }
+
+    grid(height, width, stroke, step) {
+        let cells = [];
+        for (let line=0; line<height; line+=step) {
+            for (let col=0; col<width; col+=step) {
+                let c = this.square(line, col, step);
+                c.fill('none').stroke(stroke);
+                cells.push(c);
+            }
+        }
+        return cells;
     }
 
     get unit() {
