@@ -10,17 +10,23 @@ class Board {
     static DEFAULTCELLSIZE = 100;
     static GRIDSTROKE = { width:2, color:'#000' };
     static GRIDTHICKSTROKE = { width:5, color:'#000' };
+    /** @type {Number} */
     #height;    // nombre de cellules en hauteur
+    /** @type {Number} */
     #width;     // nombre de cellules en largeur
     #content;   // groupe svg pour le contenu
+    /** @type {Number} */
     #cellsize;  // taille d'une cellule carrée, en unités svg
-    #cellsgrid; // liste des cellules de la grille
+    /** @type {Canvas} */
     #canvas;    // objet chargé d'exécuter les dessins élémentaires
+    /** @type {Canvas} */
+    #subgridLayer; // canvas en dessous de la grille
+    /** @type {Canvas} */
+    #selectionLayer // canvas pour dessiner la sélection
     constructor(id, commande) {
         this.#content = SVG().addTo('#board').size(Board.SIZE, Board.SIZE);
         this.#cellsize = Board.DEFAULTCELLSIZE;
         this.#content.rect(Board.SIZE, Board.SIZE).fill('#fff').stroke('none');
-        this.#cellsgrid = [];
         this.#parse_commande(commande.trim());
     }
 
@@ -46,10 +52,9 @@ class Board {
         /* on compte une marge d'une case de tous les côtés */
         this.#cellsize = Math.min(Board.SIZE/(this.#height+2), Board.SIZE/(this.#width+2));
         this.#canvas = new Canvas(this.#content, this.#cellsize);
-        this.#drawGrid();
-        if (g.type == 'S') {
-            this.#drawSudoku();
-        }
+        
+        this.#subgridLayer = this.#canvas.sublayer();
+        this.#drawGrid(g.type);
 
         let coms = g.coms.split(';');
         for (let com of coms) {
@@ -59,7 +64,7 @@ class Board {
             if (this.#tryLine(com)) {
                 continue;
             }
-            if (this.#tryDotCage(com)) {
+            if (this.#tryCage(com)) {
                 continue;
             }
             if (this.#tryDigit(com)) {
@@ -68,8 +73,13 @@ class Board {
             if (this.#tryTag(com)) {
                 continue;
             }
+            if (this.#tryColorCell(com)) {
+                continue;
+            }
             console.log(com + " ne donne rien");
         }
+
+        this.#selectionLayer = this.#canvas.sublayer();
     }
 
     #tryThermo(com) {
@@ -110,28 +120,45 @@ class Board {
         return true;
     }
 
-    #tryDotCage(com){
+    #tryCage(com){
         /* 
-          Cage. exemple :Dceefeff:g-{tag}
-            Dc: signe la commande
+          Cage. exemple :Cageefeff:g:0-{tag}
+            Cag: signe la commande
             eefeff: cases concernées, tout en minuscules
-            :g, optionnel, donne la couleur
+            [:g], optionnel, donne la couleur
+            [:0] marge, en %
+            [-] trait continu, = pour gros trait
             {tag}, optionnel, donne l'étiquette
         */
-        let r = new RegExp(`^Dc(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?(?<continu>-)?(\{(?<tag>[^;]*)\})?$`, "g");
+        let r = new RegExp(`^Cag(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]{1,2}))?(:(?<margin>[0-9]{1,2}))?(?<continu>(-|=))?(\{(?<tag>[^;]*)\})?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
         }
         let coords = Coords.strToCoords(m.groups.chaine.toLowerCase());
-        let color = Canvas.color(m.groups.color || '_');
-        let polygons = this.#canvas.cadre(coords);
+        let stringColor = m.groups.color || '_';
+        let color = Canvas.color(stringColor[0]);
+        let backColor = (stringColor.length==2)?Canvas.color(stringColor[1]):'none';
+        let margin = parseInt(m.groups.margin || '10')/100;
+        let polygons = this.#canvas.cadre(coords, margin);
+        let strokeWidth = Board.GRIDSTROKE.width;
+        if (m.groups.continu == '=') {
+            strokeWidth = Board.GRIDTHICKSTROKE.width;
+        }
+        
         for (let pol of polygons) {
-            pol.fill('none').stroke({width:3, color:color});
-            if (m.groups.continu != '-'){
+            pol.fill('none').stroke({width:strokeWidth, color:color});
+            if (typeof(m.groups.continu) == 'undefined'){
                 pol.attr('stroke-dasharray', '10');
             }
         }
+        if (backColor != 'none') {
+            let backPolygons = this.#subgridLayer.cadre(coords, margin);
+            for (let pol of backPolygons) {
+                pol.fill(backColor).stroke('none');
+            }
+        }
+
         if (m.groups.tag) {
             let text = this.#canvas.text(m.groups.tag, coords[0], 0.3);
             text.stroke(color).fill('#fff');
@@ -164,11 +191,11 @@ class Board {
           Tag: signature de la commande
           {tag}: texte affiché
           Ee: position
-          :gb, optionnels, couleurs du texte (et bordure le cas échéant) et du fond
+          [:gb], optionnels, couleurs du texte (et bordure le cas échéant) et du fond
             (si pas de fond, transparent)
-          .NE, ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
-          h45: optionnel, hauteur (ou largeur) en pourcents (h ou w)
-          rR: optionel, rotation Right (R, L, D pour demi tour)
+          [.NE], ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
+          [s45]: taille en pourcents
+          [rR]: optionel, rotation Right (R, L, D pour demi tour)
         */
         let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D)))?$`, "g");
         let m = r.exec(com);
@@ -192,30 +219,41 @@ class Board {
             case 'D': text.turnClockWise().turnClockWise(); break;
         }
         return true;
-
     }
 
-    #drawGrid() {
-        for (let line=0; line<this.#height; line++) {
-            for (let col=0; col<this.#width; col++) {
-                let c = this.#canvas.rect(line, col, 1);
-                c.fill('none').stroke(Board.GRIDSTROKE);
-                this.#cellsgrid.push(c);
-            }
+    #tryColorCell(com){
+        /*
+        Coloration de cellules, ColE3E4F4:g:0.95
+          Col: signature de la commande
+          E3E4F4: adresse cellules
+          [:g] couleur
+          [:0] marge, en %
+          [.95] opacité
+        */
+        let r = new RegExp(`^Col(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?(:(?<margin>[0-9]{1,2}))?(\.(?<opacity>[0-9]{1,2}))?$`, "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
         }
+        let color = Canvas.color(m.groups.color || '_');
+        let margin = parseInt(m.groups.margin || '0')/100;
+        let opacity = parseInt(m.groups.opacity || '100')/100;
+        let coords = Coords.strToCoords(m.groups.chaine.toLowerCase());
+        let backPolygons = this.#subgridLayer.cadre(coords,margin);
+        for (let pol of backPolygons) {
+            pol.fill({color:color, opactiy:opacity}).stroke('none');
+        }
+        return true;
     }
 
-    #drawSudoku() {
-        if ((this.#height != 9) || (this.#width != 9)){
-            throw new Error("Dimensions invalides pour une grille de Sudoku")
+    #drawGrid(type) {
+        if ((type == 'G') || (type=='S')){
+            this.#canvas.grid(this.#height, this.#width, Board.GRIDSTROKE, 1);
         }
-        for (let line=0; line<this.#height; line+=3) {
-            for (let col=0; col<this.#width; col+=3) {
-                let c = this.#canvas.rect(line, col, 3);
-                c.fill('none').stroke(Board.GRIDTHICKSTROKE);
-            }
+        if (type == 'S') {
+            this.#canvas.grid(this.#height, this.#width, Board.GRIDTHICKSTROKE, 3);
         }
-    }
+    }   
 }
 
 export { Board };
