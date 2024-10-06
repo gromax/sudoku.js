@@ -101,13 +101,16 @@ class Board {
         return true;
     }
 
+    /**
+     * Essaie d'exécuter la commande en tant que tracer de ligne brisée
+     * Exemple de commande valide : LiBCDEBa:g
+     * Li: identifie la commande ; li pour un trait plus fin
+     * BCDEBa: chemin
+     * [:g] : couleur
+     * @param {string} com 
+     * @returns {boolean}
+     */
     #tryLine(com){
-        /* 
-          Ligne. exemple :LiBCDEBa:g
-            Li signe la commande ou li pour un trait plus fin
-            BCDEBa est le chemin
-            :g, optionnel, précise la couleur
-        */
         let r = new RegExp(`^[Ll]i(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -120,16 +123,20 @@ class Board {
         return true;
     }
 
+    /**
+     * Essaie d'exécuter la commande en tant que tracer de cage,
+     * c'est à dire une ligne pointillée à l'intérieur du cadre d'un ensemble de cellules
+     * Exemple de commande valide : Cageefeff:g:0-{tag}
+     * Cag: identifie la commande
+     * eefeff: cases concernées, tout en minuscules
+     * [:g]: couleur
+     * [:0]: marge, en %
+     * [-]: trait continu, = pour gros trait
+     * [{tag}]: étiquette
+     * @param {string} com 
+     * @returns 
+     */
     #tryCage(com){
-        /* 
-          Cage. exemple :Cageefeff:g:0-{tag}
-            Cag: signe la commande
-            eefeff: cases concernées, tout en minuscules
-            [:g], optionnel, donne la couleur
-            [:0] marge, en %
-            [-] trait continu, = pour gros trait
-            {tag}, optionnel, donne l'étiquette
-        */
         let r = new RegExp(`^Cag(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]{1,2}))?(:(?<margin>[0-9]{1,2}))?(?<continu>(-|=))?(\{(?<tag>[^;]*)\})?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -166,10 +173,19 @@ class Board {
         return true;
     }
 
+    /**
+     * Essaie d'exécuter la commande en tant qu'écriture d'un digit au centre d'une cellule
+     * Exemple de commande valide: 4EG:g
+     * 4: le chiffre à afficher
+     * EG: position
+     * [:g]: couleur
+     * @param {string} com 
+     * @returns 
+     */
     #tryDigit(com){
         /*
           Écriture d'un chiffre simple
-          4EG:g: 4 le digit, E8 sa position, [:g sa couleur]
+          
         */
         let r = new RegExp(`^(?<digit>[0-9])(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
@@ -195,7 +211,7 @@ class Board {
             (si pas de fond, transparent)
           [.NE], ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
           [s45]: taille en pourcents
-          [rR]: optionel, rotation Right (R, L, D pour demi tour)
+          [rR]: rotation Right (R, L, D pour demi tour)
         */
         let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D)))?$`, "g");
         let m = r.exec(com);
