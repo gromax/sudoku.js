@@ -195,6 +195,13 @@ class Canvas {
     }
 
     /**
+     * vide le canvas
+     */
+    clear() {
+        this.#group.clear();
+    }
+
+    /**
      * Accesseur vers l'échelle en pixels/unité
      * @returns {Number}
      */
