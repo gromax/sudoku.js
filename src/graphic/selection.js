@@ -1,117 +1,81 @@
-import { SVG } from '@svgdotjs/svg.js';
 import { CELLSIZE, GRIDSIZE } from '../constantes';
-import { Contour } from '../utils/contour';
+import { Canvas } from './canvas';
 
 class Selection {
-    static STROKE = { width:10, color:"#0066ff" };
-
+    static STROKE = { color:"#AAAAFF", width:5};
+    static FILL = { color:"#AAAAFF", opacity:0.5};
+    #canvas;
     #group;
-    #states;
-    #selectAddMode;
-    #selectBorderMode;
+    #states; // grille contenant false/true indiquant cellule sélectionnée
+    
+    /**
+     * constructeur
+     * @param {Canvas} parent 
+     */
     constructor(parent) {
-        this.#group = parent.nested();
+        this.#canvas = parent;
         this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
-        this.#selectAddMode = false;
-        this.#selectBorderMode = false;
     }
 
-    #draw() {
+    /**
+     * sélection d'une cellule
+     * @param {Number} x coordonnée x du click
+     * @param {Number} y coordonnée y du click
+     * @param {boolean} shiftPressed touche shift pressée
+     */
+    select(x, y, shiftPressed) {
+        let line = Math.floor(y/CELLSIZE) - 1;
+        let col = Math.floor(x/CELLSIZE) - 1;
+        if (!shiftPressed){
+            this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
+        }
+        this.#addSquare(line, col); 
+     }
+
+    /**
+     * dessine un carré
+     * @param {Number} line
+     * @param {Number} col
+     */
+    #addSquare(line, col) {
+        this.#toggle(line, col);
+        this.#refresh();
+    }
+
+    /**
+     * rafraîchit le tracé de la sélection
+     */
+    #refresh(){
+        this.#canvas.clear();
         let coords = [];
-        for (let i=0; i<GRIDSIZE; i++) {
-            for (let j=0; j<GRIDSIZE; j++) {
-                if (this.#states[i*GRIDSIZE+j]) {
-                    coords.push([i,j]);
+        for (let line=0; line<GRIDSIZE; line++){
+            for (let col=0; col<GRIDSIZE; col++){
+                if (this.#states[line*GRIDSIZE+col]) {
+                    //let s = this.#canvas.square(line, col, 1);
+                    //s.fill(Selection.FILL).stroke('none');
+                    coords.push([line, col]);
                 }
             }
         }
-        let c = new Contour(coords);
-        let paths = c.getPaths(CELLSIZE, 5);
-        for (let p of paths) {
-            this.#group.polygon(p).stroke(Selection.STROKE).fill('none');
+        let polys = this.#canvas.cadre(coords, 0);
+        for (let poly of polys){
+            poly.stroke(Selection.STROKE).fill(Selection.FILL);
         }
     }
 
-    clear() {
-        this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
-        this.#group.clear();
-        return this;
+    /**
+     * 
+     * @param {Number} line 
+     * @param {Number} col 
+     */
+    #toggle(line, col){
+        if ((line<0) || (line>=GRIDSIZE) || (col<0) || (col>=GRIDSIZE)) {
+            return;
+        }
+        this.#states[line*GRIDSIZE+col] = !this.#states[line*GRIDSIZE+col];
     }
 
-    remove(line, col) {
-        if ((line<0) || (line>=GRIDSIZE)){
-            return;
-        }
-        if ((col<0) || (col>=GRIDSIZE)){
-            return;
-        }
-        let index = line*GRIDSIZE+col;
-        if (!this.#states[index]){
-            return;
-        }
-        this.#states[index] = false;
-        this.#group.clear();
-        this.#draw();
-    }
 
-    add(line, col) {
-        if ((line<0) || (line>=GRIDSIZE)){
-            return;
-        }
-        if ((col<0) || (col>=GRIDSIZE)){
-            return;
-        }
-        let index = line*GRIDSIZE+col;
-        if (this.#states[index]){
-            return;
-        }
-        this.#states[index] = true;
-        this.#group.clear();
-        this.#draw();
-    }
-
-    toggle(line, col) {
-        if ((line<0) || (line>=GRIDSIZE)){
-            return;
-        }
-        if ((col<0) || (col>=GRIDSIZE)){
-            return;
-        }
-        let index = line*GRIDSIZE+col;
-        this.#states[index] = !this.#states[index];
-        this.#group.clear();
-        this.#draw();
-        return this;
-    }
-
-    clickEvent(e) {
-        let col = Math.floor(e.offsetX/CELLSIZE);
-        let line = Math.floor(e.offsetY/CELLSIZE);
-        if (this.#selectAddMode) {
-            this.toggle(line, col);
-        } else {
-            this.clear();
-            this.add(line, col);
-        }
-    }
-
-    selectMode(seton) {
-        if (seton === true) {
-            this.#selectAddMode = true;
-            this.#selectBorderMode = false;
-        } else {
-            this.#selectAddMode = false;
-        }
-    }
-
-    selectBorderMode(seton) {
-        if (seton === true) {
-            this.#selectBorderMode = true;
-            this.#selectAddMode = false;
-        } else {
-            this.#selectAddMode = false;
-        }
-    }
 
 }
 
