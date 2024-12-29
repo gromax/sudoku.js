@@ -4,6 +4,7 @@ import { SVG } from '@svgdotjs/svg.js';
 
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
+import { Selection } from './selection';
 
 class Board {
     static SIZE = 1100;
@@ -18,29 +19,52 @@ class Board {
     /** @type {Number} */
     #cellsize;  // taille d'une cellule carrée, en unités svg
     /** @type {Canvas} */
-    #canvas;    // objet chargé d'exécuter les dessins élémentaires
+    #canvas;    // conteneur pour tous les dessins
+    /** @type {Canvas} */
+    #decorations;    // conteneur pour les dessins faits sur la grille
     /** @type {Canvas} */
     #subgridLayer; // canvas en dessous de la grille
     /** @type {Canvas} */
     #selectionLayer // canvas pour dessiner la sélection
-    constructor(id, commande) {
-        this.#content = SVG().addTo('#board').size(Board.SIZE, Board.SIZE);
+    
+    /**
+     * constructure
+     * @param {string} id identifiant dom du conteneur
+     * @param {string} format chaîne indiquant le format de la grille
+     * @param {string} commande ensemble de commandes des éléments à tracer
+     */
+    constructor(id, format, commande) {
+        this.#content = SVG().addTo(id).size(Board.SIZE, Board.SIZE);
         this.#cellsize = Board.DEFAULTCELLSIZE;
         this.#content.rect(Board.SIZE, Board.SIZE).fill('#fff').stroke('none');
-        this.#parse_commande(commande.trim());
+        this.#makeGrid(format.trim());
+        this.parse(commande.trim());
+        let self = this;
+        this.#content.click(function(e){self.click(e);})
     }
 
-    #parse_commande(commande) {
-        /*
-        commande: chaine au format (par ex) 8x9S:commande1;commande2;...
-        ou encore 9S:com1;com2... pour une grille carrée
-        S indique qu'il faut ajouter les cadres pour les secteurs de Sudoku
-        Le commandes possibles sont détaillées ensuite
-        */
-        let r = new RegExp("^(?<height>[1-9][0-9]*)(x(?<width>[1-9][0-9]*))?(?<type>S)?:(?<coms>.*)$", "g");
-        let matchs = r.exec(commande);
+    /**
+     * gestion événement de click
+     * @param {Event} e 
+     */
+    click(e) {
+        let altPressed = e.altKey;
+        let ctrlPressed = e.ctrlKey;
+        let shiftPressed = e.shiftKey;
+        let x = e.offsetX;
+        let y = e.offsetY;
+        this.#selectionLayer.select(x, y, shiftPressed);
+    }
+
+    /**
+     * construit et dessine la grille de base
+     * @param {string} format 8x9S ou encore 9S. S indique une grille de Sudoku
+     */
+    #makeGrid(format) {
+        let r = new RegExp("^(?<height>[1-9][0-9]*)(x(?<width>[1-9][0-9]*))?(?<type>S)?$", "g");
+        let matchs = r.exec(format);
         if (matchs === null){
-            throw new Error("Commande invalide");
+            throw new Error(`Format ${format} invalide`);
         }
         let g = matchs.groups;
         this.#height = parseInt(g.height);
@@ -55,8 +79,16 @@ class Board {
         
         this.#subgridLayer = this.#canvas.sublayer();
         this.#drawGrid(g.type);
+        this.#decorations = this.#canvas.sublayer();
+        this.#selectionLayer = new Selection(this.#canvas.sublayer());
+    }
 
-        let coms = g.coms.split(';');
+    /**
+     * exécute les commandes de dessin
+     * @param {string} commandes chaine de forme com1;com2;...
+     */
+    parse(commandes) {
+        let coms = commandes.split(';');
         for (let com of coms) {
             if (this.#tryThermo(com)) {
                 continue;
@@ -76,19 +108,20 @@ class Board {
             if (this.#tryColorCell(com)) {
                 continue;
             }
-            console.log(com + " ne donne rien");
+            console.log(`commande ${com} n'est pas reconnue.`);
         }
-
-        this.#selectionLayer = this.#canvas.sublayer();
     }
 
+    /**
+     * Thermomomètre. exemple :ThBCDEBa:g
+     *      Th signe la commande
+     *      BCDEBa est le chemin
+     *      :g, optionnel, précise une couleur
+     * renvoi true en cas de succès
+     * @param {string} com 
+     * @returns {boolean}
+     */
     #tryThermo(com) {
-        /* 
-          Thermomomètre. exemple :ThBCDEBa:g
-            Th signe la commande
-            BCDEBa est le chemin
-            :g, optionnel, précise une couleur
-        */
         let r = new RegExp(`^Th(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -96,8 +129,8 @@ class Board {
         }
         let coords = Coords.strToCoords(m.groups.chaine);
         let color = Canvas.color(m.groups.color || '_');
-        this.#canvas.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
-        this.#canvas.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
+        this.#decorations.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
+        this.#decorations.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
         return true;
     }
 
@@ -119,7 +152,7 @@ class Board {
         let w = (com[0]=='L') ? this.#cellsize/4 : this.#cellsize/8;
         let coords = Coords.strToCoords(m.groups.chaine);
         let color = Canvas.color(m.groups.color || '_');
-        this.#canvas.line(coords).fill('none').stroke({width:w, color:color});
+        this.#decorations.line(coords).fill('none').stroke({width:w, color:color});
         return true;
     }
 
@@ -134,7 +167,7 @@ class Board {
      * [-]: trait continu, = pour gros trait
      * [{tag}]: étiquette
      * @param {string} com 
-     * @returns 
+     * @returns {boolean}
      */
     #tryCage(com){
         let r = new RegExp(`^Cag(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]{1,2}))?(:(?<margin>[0-9]{1,2}))?(?<continu>(-|=))?(\{(?<tag>[^;]*)\})?$`, "g");
@@ -147,7 +180,7 @@ class Board {
         let color = Canvas.color(stringColor[0]);
         let backColor = (stringColor.length==2)?Canvas.color(stringColor[1]):'none';
         let margin = parseInt(m.groups.margin || '10')/100;
-        let polygons = this.#canvas.cadre(coords, margin);
+        let polygons = this.#decorations.cadre(coords, margin);
         let strokeWidth = Board.GRIDSTROKE.width;
         if (m.groups.continu == '=') {
             strokeWidth = Board.GRIDTHICKSTROKE.width;
@@ -167,7 +200,7 @@ class Board {
         }
 
         if (m.groups.tag) {
-            let text = this.#canvas.text(m.groups.tag, coords[0], 0.3);
+            let text = this.#decorations.text(m.groups.tag, coords[0], 0.3);
             text.stroke(color).fill('#fff');
         }
         return true;
@@ -180,7 +213,7 @@ class Board {
      * EG: position
      * [:g]: couleur
      * @param {string} com 
-     * @returns 
+     * @returns {boolean}
      */
     #tryDigit(com){
         /*
@@ -194,25 +227,27 @@ class Board {
         }
         let color = Canvas.color(m.groups.color || '_');
         let coord = Coords.paireToCoord(m.groups.pos);
-        let text = this.#canvas.text(m.groups.digit, coord, 0.8);
+        let text = this.#decorations.text(m.groups.digit, coord, 0.8);
         text.anchor('C');
         text.stroke(color);
         text.fill('none');
         return true;
     }
 
+    /**
+     * Écriture d'un texte, Tag{tag}Ee:gb.NEh45r90
+     *    Tag: signature de la commande
+     *    {tag}: texte affiché
+     *    Ee: position
+     *    [:gb], optionnels, couleurs du texte (et bordure le cas échéant) et du fond
+     *      (si pas de fond, transparent)
+     *    [.NE], ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
+     *    [s45]: taille en pourcents
+     *    [rR]: rotation Right (R, L, D pour demi tour)
+     * @param {string} com 
+     * @returns {boolean}
+     */
     #tryTag(com){
-        /*
-        Écriture d'un texte, Tag{tag}Ee:gb.NEh45r90
-          Tag: signature de la commande
-          {tag}: texte affiché
-          Ee: position
-          [:gb], optionnels, couleurs du texte (et bordure le cas échéant) et du fond
-            (si pas de fond, transparent)
-          [.NE], ancre, optionnel parmi N, NE, E, SE, S, SW, W, NW, C
-          [s45]: taille en pourcents
-          [rR]: rotation Right (R, L, D pour demi tour)
-        */
         let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D)))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -226,7 +261,7 @@ class Board {
         let size = parseInt(stringSize.substring(1))/100;
         let coord = Coords.paireToCoord(m.groups.pos);
         let angle = m.groups.angle || '0';
-        let text = this.#canvas.text(m.groups.tag, coord, size);
+        let text = this.#decorations.text(m.groups.tag, coord, size);
         text.stroke(color).fill(backColor);
         text.anchor(anchor);
         switch(angle) {
@@ -237,15 +272,17 @@ class Board {
         return true;
     }
 
+    /**
+     * Coloration de cellules, ColE3E4F4:g:0.95
+     *    Col: signature de la commande
+     *    E3E4F4: adresse cellules
+     *    [:g] couleur
+     *    [:0] marge, en %
+     *    [.95] opacité
+     * @param {string} com 
+     * @returns {boolean}
+     */
     #tryColorCell(com){
-        /*
-        Coloration de cellules, ColE3E4F4:g:0.95
-          Col: signature de la commande
-          E3E4F4: adresse cellules
-          [:g] couleur
-          [:0] marge, en %
-          [.95] opacité
-        */
         let r = new RegExp(`^Col(?<chaine>(${Coords.REGEX})+)(:(?<color>[a-zA-Z_]))?(:(?<margin>[0-9]{1,2}))?(\.(?<opacity>[0-9]{1,2}))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -262,6 +299,10 @@ class Board {
         return true;
     }
 
+    /**
+     * Dessine la grille
+     * @param {string} type 'S' ou 'G'
+     */
     #drawGrid(type) {
         if ((type == 'G') || (type=='S')){
             this.#canvas.grid(this.#height, this.#width, Board.GRIDSTROKE, 1);
