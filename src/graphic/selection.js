@@ -4,8 +4,9 @@ import { Canvas } from './canvas';
 class Selection {
     static STROKE = { color:"#AAAAFF", width:5};
     static FILL = { color:"#AAAAFF", opacity:0.5};
+    /** @type {Canvas} */
     #canvas;
-    #group;
+    /** @type {Array} */
     #states; // grille contenant false/true indiquant cellule sélectionnée
     
     /**
