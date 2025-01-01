@@ -4,12 +4,12 @@ import { Button } from "./button";
 
 
 class Radio {
-    /** @type {Array} */
+    /** @type {Array<Button>} */
     #buttons;
 
     /**
      * constructeur
-     * @param {Array} buttons 
+     * @param {Array<Button>} buttons 
      */
     constructor(buttons) {
         this.#buttons = buttons;
