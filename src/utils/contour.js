@@ -3,13 +3,26 @@
 
 import _ from 'lodash';
 import { DIRECTION } from '../constantes';
+import { Coords } from './coords';
 
 class Segment {
+   /** @type {Number} */
    #x;
+   /** @type {Number} */
    #y;
+   /** @type {Number} */
    #dx;
+   /** @type {Number} */
    #dy;
+   /** @type {Number} */
    #dir;
+
+   /**
+    * constructeur
+    * @param {Number} x 
+    * @param {Number} y 
+    * @param {Number} dir 
+    */
    constructor(x, y, dir){
       this.#x = x;
       this.#y = y;
@@ -22,30 +35,60 @@ class Segment {
       this.#dir = dir;
    }
 
+   /**
+    * renvoie vrai si other est segment opposé
+    * @param {Segment} other 
+    * @returns {boolean}
+    */
    isOpposite(other) {
       return ((this.#dx==-other.#dx) && (this.#dy==-other.#dy) && (this.#x+this.#dx==other.#x) && (this.#y+this.#dy==other.#y));
    }
 
+   /**
+    * Accesseur
+    * @returns {Number}
+    */
    get xdeb() {
       return this.#x;
    }
 
+   /**
+    * Accesseur
+    * @returns {Number}
+    */
    get ydeb() {
       return this.#y;
    }
 
+   /**
+    * Accesseur
+    * @returns {Number}
+    */
    get xfin() {
       return this.#x + this.#dx;
    }
 
+   /**
+    * Accesseur
+    * @returns {Number}
+    */
    get yfin() {
       return this.#y + this.#dy;
    }
 
+   /**
+    * Accesseur
+    * @returns {Number}
+    */
    get dir() {
       return this.#dir;
    }
 
+   /**
+    * renvoie vrai si other a start sur end de this
+    * @param {Segment} other 
+    * @returns {boolean}
+    */
    startsOnMyEnd(other) {
       return ((other.xdeb == this.xfin) && (other.ydeb == this.yfin));
    }
@@ -53,14 +96,20 @@ class Segment {
 }
 
 class Contour {
+   /** @type {Array<Segment>} */
    #segments;
+
+   /**
+    * constructeur
+    * @param {Array<Coords>|Array<Array<Number>>} coords 
+    */
    constructor(coords){
       let line, col;
       this.#segments = Array();
       for (let i=0; i<coords.length; i++) {
          let c = coords[i];
          if ((typeof c == 'object') && (c.constructor.name == 'Coords')) {
-            [col,line] = c.xy;
+            [col, line] = c.xy;
          } else {
             [line, col] = coords[i];
          }
@@ -68,6 +117,13 @@ class Contour {
       }
    }
 
+   /**
+    * ajoute un segment au chemin
+    * @param {Number} x 
+    * @param {Number} y 
+    * @param {Number} dir 
+    * @returns {null}
+    */
    #addSegment(x, y, dir) {
       let snew = new Segment(x, y, dir);
 
@@ -81,6 +137,11 @@ class Contour {
       this.#segments.push(snew);
    }
 
+   /**
+    * ajoute le carré en (x,y) au segment
+    * @param {Number} x 
+    * @param {Number} y 
+    */
    #addSquare(x, y) {
       this.#addSegment(x, y, DIRECTION.RIGHT);
       this.#addSegment(x+1, y, DIRECTION.DOWN);
@@ -88,6 +149,9 @@ class Contour {
       this.#addSegment(x, y+1, DIRECTION.UP);
    }
 
+   /**
+    * réordonne les segments
+    */
    #order() {
       for (let i=0; i<this.#segments.length-1; i++) {
          for (let j=i+1; j<this.#segments.length; j++) {
@@ -101,10 +165,13 @@ class Contour {
       }
    }
 
+   /**
+    * Sépare en chemins connexes.
+    * @returns {Array<Array<Segment>>}
+    */
    #cut() {
       this.#order();
       let output = [];
-      let i = 0;
       let current = [];
       for(let i=0; i<this.#segments.length; i++) {
          let s = this.#segments[i];
@@ -126,6 +193,12 @@ class Contour {
       return output;
    }
 
+   /**
+    * Pour un chemin connexe, renvoie la suite de coordonnées [x1, y1, x2, y2, ...]
+    * @param {Array<Segment>} path 
+    * @param {Number} margin 
+    * @returns {Array<Number>}
+    */
    #getOnePath(path, margin){
       if (path.length <4) {
          return [];
@@ -155,6 +228,12 @@ class Contour {
       return xyValues;
    }
 
+   /**
+    * renvoie la liste, pour chaque chemin connexe, des coordonnées
+    * sous forme [[x1, y1, x2, y2, ...], [x1, y1, ...], ...]
+    * @param {Number} margin 
+    * @returns {Array<Array<Number>>}
+    */
    getPaths(margin) {
       let paths = this.#cut();
       let output = [];
