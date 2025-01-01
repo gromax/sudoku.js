@@ -8,8 +8,11 @@ import { Text } from './text.js';
 import { Coords } from '../utils/coords.js';
 
 class Canvas {
+    /** @type {SVG.SVG} */
     #group;
+    /** @type {Number} */
     #unit;
+    /** @type {Number} */
     #marge;
 
     /**
@@ -65,8 +68,8 @@ class Canvas {
     /**
      * calcule une (ou plusieurs) coordonnées tenant compte de la taille de l'unité
      * en pixels et de la marge.
-     * @param {Array|Coords|number} u 
-     * @returns {Array|Number}
+     * @param {Array<Number>|Array<Coords>|Coords|Number} u 
+     * @returns {Array<Number>|Array<Array<Number>>|Number}
      */
     unitToValue(u) {
         if (Array.isArray(u)) {
@@ -95,6 +98,22 @@ class Canvas {
     }
 
     /**
+     * Renvoie un SVG représentant un rect dont le con supérieur gauche est
+     * en line, col et de talle size, le tout exprimé en unité du canvas.
+     * @param {Number} line 
+     * @param {Number} col 
+     * @param {Number} width
+     * @param {Number} height
+     * @param {Number} radius
+     * @returns {SVG.Rect}
+     */
+    rect(line, col, width, height, radius=0) {
+        let r = this.#group.rect(width*this.#unit, height*this.#unit).radius(radius*this.#unit);
+        r.move((col+this.#marge)*this.#unit, (line+this.#marge)*this.#unit);
+        return r;
+    }
+
+    /**
      * Renvoie un disque SVG en line, col et de taille size
      * exprimé en unité du canvas
      * @param {Number} line 
@@ -114,7 +133,7 @@ class Canvas {
 
     /**
      * Renvoie le SVG d'une ligne brisée
-     * @param {string|Array} coords : soit une chaine de coordonnées, soit une liste
+     * @param {string|Array<Number>} coords : soit une chaine de coordonnées, soit une liste
      * @returns {SVG.Polyline}
      */
     line(coords) {
@@ -134,7 +153,7 @@ class Canvas {
     /**
      * Crée un objet texte SVG
      * @param {string} chaine la chaine à afficher
-     * @param {Coords, Array} coord objet Coords ou tableau [x,y]
+     * @param {Coords, Array<Number>} coord objet Coords ou tableau [x,y]
      * @param {Number} size 
      * @returns {Text}
      */
@@ -147,7 +166,7 @@ class Canvas {
 
     /**
      * Renvoi un objet svg polygone
-     * @param {string|Array} coords 
+     * @param {string|Array<Number>|Array<Coords>} coords 
      * @returns {SVG.polygon}
      */
     polygon(coords) {
@@ -160,7 +179,7 @@ class Canvas {
         if (coords.length == 0) {
             return this.#group.polygon('');
         }
-        let xyValues = this.unitToValue(coords);
+        let xyValues = _.flatten(this.unitToValue(coords));
         return this.#group.polygon(xyValues);
     }
 
