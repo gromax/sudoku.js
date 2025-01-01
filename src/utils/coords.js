@@ -3,15 +3,19 @@
 import _ from 'lodash';
 
 class Coords {
+    /** @type {Number} */
     #x;
+    /** @type {Number} */
     #y;
+
     static REGEX = "[A-Za-z][A-Za-z0-9]"
 
+    /**
+     * renvoie le tableau de coordonnées correspondant à une chaîne
+     * @param {string} chaine suite de forme "ABbDCa"
+     * @returns {Array<Coords>}
+     */
     static strToCoords(chaine) {
-        /* chaine est une suite de forme ABbDCa
-           une paire de coordonnées est formée de deux lettres
-           renvoie un tableau de Coords correspondant
-        */
         let n = chaine.length;
         if (n%2 != 0) {
             throw new Error(`chaine = ${chaine} n'est pas valide`);
@@ -23,15 +27,18 @@ class Coords {
         return output;
     }
 
+    /**
+     * la paire est une chaîne de deux caractères représentant line,col
+     * leur valeur est ainsi définies :
+     * a = -1 ; A = -0.5
+     * b = 0 ; B = 0.5
+     * etc.
+     * la 2e lettre peut aussi être un digit 0-9
+     * renvoie la coordonnée correspondante
+     * @param {string} paire chaine de deux lettres
+     * @returns {Coords}
+     */
     static paireToCoord(paire) {
-        /* paire = chaine de deux lettres alphabétiques, minuscule ou minuscules
-           a = -1 ; A = -0.5
-           b = 0 ; B = 0.5
-           etc.
-           La 2e peut-être un digit 0-9
-           La première pour la ligne (y), la seconde pour la colonne (x)
-           renvoie la coordonnée correspondante
-        */
         if (paire.length != 2) {
             throw new Error(`paire = ${paire} n'est pas valide`);
         }
@@ -39,6 +46,13 @@ class Coords {
         return new Coords(x, y);
     }
 
+    /**
+     * renvoie la valeur associée à une lettre
+     * a = -1 ; A = -0.5
+     * ou digit 0-9
+     * @param {string} letter un caractère
+     * @returns {Number}
+     */
     static letterToValue(letter) {
         if (letter.length != 1) {
             throw new Error(`letter = ${letter} n'est pas valide`);
@@ -58,27 +72,52 @@ class Coords {
         }
     }
 
+    /**
+     * Constructeur
+     * @param {Number} x 
+     * @param {Number} y 
+     */
     constructor(x,y) {
        this.#x = x;
        this.#y = y; 
     }
 
+    /**
+     * Accesseur x
+     * @returns {Number}
+     */
     get x() {
         return this.#x;
     }
 
+    /**
+     * Accesseur y
+     * @returns {Number}
+     */
     get y() {
         return this.#y;
     }
 
+    /**
+     * Accesseur line = y
+     * @returns {Number}
+     */
     get line() {
         return this.#y;
     }
 
+    /**
+     * Accesseur col = x
+     * @returns {Number}
+     */
     get col() {
         return this.#x;
     }
 
+    /**
+     * Accesseur paire [x,y]
+     * @returns {Array<Number>}
+     */
     get xy() {
         return [this.#x, this.#y];
     }
