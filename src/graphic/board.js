@@ -5,6 +5,7 @@ import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
 import { Selection } from './selection';
+import { GCell } from './cell';
 
 class Board {
     static SIZE = 1100;
@@ -26,7 +27,11 @@ class Board {
     #subgridLayer; // canvas en dessous de la grille
     /** @type {Canvas} */
     #selectionLayer // canvas pour dessiner la sélection
-    
+    /** @type {Canvas} */
+    #backCellLayer // canvas pour dessiner la partie arrière des cellules
+    /** @type {Canvas} */
+    #frontCellLayer // canvas pour dessiner la partie avant sélection
+
     /**
      * constructure
      * @param {string} id identifiant dom du conteneur
@@ -41,6 +46,11 @@ class Board {
         this.parse(commande.trim());
         let self = this;
         this.#content.click(function(e){self.click(e);})
+
+        // test
+        let c = new GCell(this.#backCellLayer, this.#frontCellLayer, 2, 3);
+        c.addColor("#AA0000").addColor("#0000AA").addColor("#008800").addColor("#888888");
+
     }
 
     /**
@@ -78,8 +88,10 @@ class Board {
         this.#canvas = new Canvas(this.#content, this.#cellsize);
         
         this.#subgridLayer = this.#canvas.sublayer();
+        this.#backCellLayer = this.#canvas.sublayer();
         this.#drawGrid(g.type);
         this.#decorations = this.#canvas.sublayer();
+        this.#frontCellLayer = this.#canvas.sublayer();
         this.#selectionLayer = new Selection(this.#canvas.sublayer());
     }
 
