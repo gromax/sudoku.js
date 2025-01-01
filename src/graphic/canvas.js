@@ -32,6 +32,14 @@ class Canvas {
     }
 
     /**
+     * renvoie un groupe
+     * @returns {SVG.G}
+     */
+    group() {
+        return this.#group.group();
+    }
+
+    /**
      * Renvoie un code #rgb d'après une lettre codant la couleur
      * @param {string} code 
      * @returns {string}
@@ -77,10 +85,11 @@ class Canvas {
      * @param {Number} line 
      * @param {Number} col 
      * @param {Number} size 
+     * @param {Number} radius
      * @returns {SVG.Rect}
      */
-    square(line, col, size) {
-        let c = this.#group.rect(size*this.#unit, size*this.#unit);
+    square(line, col, size, radius=0) {
+        let c = this.#group.rect(size*this.#unit, size*this.#unit).radius(radius*this.#unit);
         c.move((col+this.#marge)*this.#unit, (line+this.#marge)*this.#unit);
         return c;
     }
