@@ -6,22 +6,22 @@ import { DIRECTION } from '../constantes';
 import { Coords } from './coords';
 
 class Segment {
-   /** @type {Number} */
+   /** @type {number} */
    #x;
-   /** @type {Number} */
+   /** @type {number} */
    #y;
-   /** @type {Number} */
+   /** @type {number} */
    #dx;
-   /** @type {Number} */
+   /** @type {number} */
    #dy;
-   /** @type {Number} */
+   /** @type {number} */
    #dir;
 
    /**
     * constructeur
-    * @param {Number} x 
-    * @param {Number} y 
-    * @param {Number} dir 
+    * @param {number} x 
+    * @param {number} y 
+    * @param {number} dir 
     */
    constructor(x, y, dir){
       this.#x = x;
@@ -46,7 +46,7 @@ class Segment {
 
    /**
     * Accesseur
-    * @returns {Number}
+    * @returns {number}
     */
    get xdeb() {
       return this.#x;
@@ -54,7 +54,7 @@ class Segment {
 
    /**
     * Accesseur
-    * @returns {Number}
+    * @returns {number}
     */
    get ydeb() {
       return this.#y;
@@ -62,7 +62,7 @@ class Segment {
 
    /**
     * Accesseur
-    * @returns {Number}
+    * @returns {number}
     */
    get xfin() {
       return this.#x + this.#dx;
@@ -70,7 +70,7 @@ class Segment {
 
    /**
     * Accesseur
-    * @returns {Number}
+    * @returns {number}
     */
    get yfin() {
       return this.#y + this.#dy;
@@ -78,7 +78,7 @@ class Segment {
 
    /**
     * Accesseur
-    * @returns {Number}
+    * @returns {number}
     */
    get dir() {
       return this.#dir;
@@ -101,7 +101,7 @@ class Contour {
 
    /**
     * constructeur
-    * @param {Array<Coords>|Array<Array<Number>>} coords 
+    * @param {Array<Coords>|Array<[number,number]>} coords 
     */
    constructor(coords){
       let line, col;
@@ -119,9 +119,9 @@ class Contour {
 
    /**
     * ajoute un segment au chemin
-    * @param {Number} x 
-    * @param {Number} y 
-    * @param {Number} dir 
+    * @param {number} x 
+    * @param {number} y 
+    * @param {number} dir 
     * @returns {null}
     */
    #addSegment(x, y, dir) {
@@ -139,8 +139,8 @@ class Contour {
 
    /**
     * ajoute le carré en (x,y) au segment
-    * @param {Number} x 
-    * @param {Number} y 
+    * @param {number} x 
+    * @param {number} y 
     */
    #addSquare(x, y) {
       this.#addSegment(x, y, DIRECTION.RIGHT);
@@ -167,7 +167,7 @@ class Contour {
 
    /**
     * Sépare en chemins connexes.
-    * @returns {Array<Array<Segment>>}
+    * @returns {Segment[][]}
     */
    #cut() {
       this.#order();
@@ -196,8 +196,8 @@ class Contour {
    /**
     * Pour un chemin connexe, renvoie la suite de coordonnées [x1, y1, x2, y2, ...]
     * @param {Array<Segment>} path 
-    * @param {Number} margin 
-    * @returns {Array<Number>}
+    * @param {number} margin 
+    * @returns {Array<number>}
     */
    #getOnePath(path, margin){
       if (path.length <4) {
@@ -231,8 +231,8 @@ class Contour {
    /**
     * renvoie la liste, pour chaque chemin connexe, des coordonnées
     * sous forme [[x1, y1, x2, y2, ...], [x1, y1, ...], ...]
-    * @param {Number} margin 
-    * @returns {Array<Array<Number>>}
+    * @param {number} margin 
+    * @returns {number[][]}
     */
    getPaths(margin) {
       let paths = this.#cut();
