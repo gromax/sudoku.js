@@ -10,16 +10,16 @@ import { Coords } from '../utils/coords.js';
 class Canvas {
     /** @type {SVG.SVG} */
     #group;
-    /** @type {Number} */
+    /** @type {number} */
     #unit;
-    /** @type {Number} */
+    /** @type {number} */
     #marge;
 
     /**
      * Constructeur
      * @param {SVG.SVG} parent 
-     * @param {Number} unit 
-     * @param {Number} marge 
+     * @param {number} unit 
+     * @param {number} marge 
      */
     constructor(parent, unit, marge=1) {
         this.#group = parent.nested();
@@ -68,8 +68,8 @@ class Canvas {
     /**
      * calcule une (ou plusieurs) coordonnées tenant compte de la taille de l'unité
      * en pixels et de la marge.
-     * @param {Array<Number>|Array<Coords>|Coords|Number} u 
-     * @returns {Array<Number>|Array<Array<Number>>|Number}
+     * @param {Array<number>|Array<Coords>|Coords|number} u 
+     * @returns {Array<number>|number[][]|number}
      */
     unitToValue(u) {
         if (Array.isArray(u)) {
@@ -85,10 +85,10 @@ class Canvas {
     /**
      * Renvoie un SVG représentant un carré dont le con supérieur gauche est
      * en line, col et de talle size, le tout exprimé en unité du canvas.
-     * @param {Number} line 
-     * @param {Number} col 
-     * @param {Number} size 
-     * @param {Number} radius
+     * @param {number} line 
+     * @param {number} col 
+     * @param {number} size 
+     * @param {number} radius
      * @returns {SVG.Rect}
      */
     square(line, col, size, radius=0) {
@@ -100,11 +100,11 @@ class Canvas {
     /**
      * Renvoie un SVG représentant un rect dont le con supérieur gauche est
      * en line, col et de talle size, le tout exprimé en unité du canvas.
-     * @param {Number} line 
-     * @param {Number} col 
-     * @param {Number} width
-     * @param {Number} height
-     * @param {Number} radius
+     * @param {number} line 
+     * @param {number} col 
+     * @param {number} width
+     * @param {number} height
+     * @param {number} radius
      * @returns {SVG.Rect}
      */
     rect(line, col, width, height, radius=0) {
@@ -116,9 +116,9 @@ class Canvas {
     /**
      * Renvoie un disque SVG en line, col et de taille size
      * exprimé en unité du canvas
-     * @param {Number} line 
-     * @param {Number} col 
-     * @param {Number} size valeur par défaut: 0.75
+     * @param {number} line 
+     * @param {number} col 
+     * @param {number} size valeur par défaut: 0.75
      * @returns {SVG.Circle}
      */
     disc(line, col, size=0.75) {
@@ -133,7 +133,7 @@ class Canvas {
 
     /**
      * Renvoie le SVG d'une ligne brisée
-     * @param {string|Array<Number>} coords : soit une chaine de coordonnées, soit une liste
+     * @param {string|Array<number>} coords : soit une chaine de coordonnées, soit une liste
      * @returns {SVG.Polyline}
      */
     line(coords) {
@@ -153,20 +153,20 @@ class Canvas {
     /**
      * Crée un objet texte SVG
      * @param {string} chaine la chaine à afficher
-     * @param {Coords, Array<Number>} coord objet Coords ou tableau [x,y]
-     * @param {Number} size 
+     * @param {Coords, [number,number]} coord objet Coords ou tableau [x,y]
+     * @param {number} size 
      * @returns {Text}
      */
     text(chaine, coord, size) {
         let [x, y] = this.unitToValue(coord);
-        let text = new Text(this.#group, chaine, size*this.#unit);
+        let text = new Text(this, chaine, size*this.#unit);
         text.move(x,y);
         return text;
     }
 
     /**
      * Renvoi un objet svg polygone
-     * @param {string|Array<Number>|Array<Coords>} coords 
+     * @param {string|Array<number>|Array<[number,number]>|Array<Coords>} coords 
      * @returns {SVG.polygon}
      */
     polygon(coords) {
@@ -188,9 +188,9 @@ class Canvas {
      * cellules correspondantes. Les cellules n'étant pas forcément connexes, il peut
      * y avoir plusieurs cadres. Le résultat renvoyé est alors toujours un tableau
      * contenant des SVG.Polygon
-     * @param {Array} coords tableau de coordonnées, liste des cellules à cadrer
-     * @param {Number} margin Marge intérieur par rapport au cadre des cellules
-     * @returns {Array}
+     * @param {Array<coords>} coords tableau de coordonnées, liste des cellules à cadrer
+     * @param {number} margin Marge intérieur par rapport au cadre des cellules
+     * @returns {Array<SVG.Polygon>}
      */
     cadre(coords, margin) {
         if (!Array.isArray(coords) || (coords.length ==0)) {
@@ -204,10 +204,10 @@ class Canvas {
 
     /**
      * Renvoie les cellules dessinées
-     * @param {Number} height Nombre de lignes
-     * @param {Number} width Nombre de colonnes
-     * @param {*} stroke options pour le style de ligne
-     * @param {Number} step taille du motif de grille en nombre de cases
+     * @param {number} height Nombre de lignes
+     * @param {number} width Nombre de colonnes
+     * @param {Object} stroke options pour le style de ligne
+     * @param {number} step taille du motif de grille en nombre de cases
      * @returns 
      */
     grid(height, width, stroke, step) {
@@ -231,7 +231,7 @@ class Canvas {
 
     /**
      * Accesseur vers l'échelle en pixels/unité
-     * @returns {Number}
+     * @returns {number}
      */
     get unit() {
         return this.#unit;
