@@ -15,7 +15,7 @@ class Button {
     #group;
     /** @type {SVG.Rect} */
     #line;
-    /** @type {Number} */
+    /** @type {number} */
     #col;
     /** @type {boolean} */
     #selected;
@@ -29,8 +29,8 @@ class Button {
     /**
      * constructeur
      * @param {Canvas} parent
-     * @param {Number} line
-     * @param {Number} col
+     * @param {number} line
+     * @param {number} col
      * @param {string} tag
      */
     constructor(parent, line, col, tag) {
@@ -119,10 +119,10 @@ class Button {
 
     /**
      * trace un carré de couleur sur le bouton
-     * @param {object|string} fill 
-     * @param {Number} xoffset
-     * @param {Number} yoffset
-     * @param {Number} width
+     * @param {Object|string} fill 
+     * @param {number} xoffset
+     * @param {number} yoffset
+     * @param {number} width
      * @returns {Button}
      */
     drawSquare(fill, xoffset, yoffset, size){
@@ -139,8 +139,8 @@ class Button {
     /**
      * trace un carré de couleur sur le bouton
      * @param {string} text
-     * @param {Number} xoffset
-     * @param {Number} yoffset
+     * @param {number} xoffset
+     * @param {number} yoffset
      * @param {string} color
      * @returns {Button}
      */
