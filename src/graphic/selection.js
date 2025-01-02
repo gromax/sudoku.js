@@ -6,7 +6,7 @@ class Selection {
     static FILL = { color:"#AAAAFF", opacity:0.5};
     /** @type {Canvas} */
     #canvas;
-    /** @type {Array} */
+    /** @type {Array<boolean>} */
     #states; // grille contenant false/true indiquant cellule sélectionnée
     
     /**
@@ -20,8 +20,8 @@ class Selection {
 
     /**
      * sélection d'une cellule
-     * @param {Number} x coordonnée x du click
-     * @param {Number} y coordonnée y du click
+     * @param {number} x coordonnée x du click
+     * @param {number} y coordonnée y du click
      * @param {boolean} shiftPressed touche shift pressée
      */
     select(x, y, shiftPressed) {
@@ -35,8 +35,8 @@ class Selection {
 
     /**
      * dessine un carré
-     * @param {Number} line
-     * @param {Number} col
+     * @param {number} line
+     * @param {number} col
      */
     #addSquare(line, col) {
         this.#toggle(line, col);
@@ -66,8 +66,8 @@ class Selection {
 
     /**
      * 
-     * @param {Number} line 
-     * @param {Number} col 
+     * @param {number} line 
+     * @param {number} col 
      */
     #toggle(line, col){
         if ((line<0) || (line>=GRIDSIZE) || (col<0) || (col>=GRIDSIZE)) {
