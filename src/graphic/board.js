@@ -12,12 +12,12 @@ class Board {
     static DEFAULTCELLSIZE = 100;
     static GRIDSTROKE = { width:2, color:'#000' };
     static GRIDTHICKSTROKE = { width:5, color:'#000' };
-    /** @type {Number} */
+    /** @type {number} */
     #height;    // nombre de cellules en hauteur
-    /** @type {Number} */
+    /** @type {number} */
     #width;     // nombre de cellules en largeur
     #content;   // groupe svg pour le contenu
-    /** @type {Number} */
+    /** @type {number} */
     #cellsize;  // taille d'une cellule carrée, en unités svg
     /** @type {Canvas} */
     #canvas;    // conteneur pour tous les dessins
@@ -50,7 +50,11 @@ class Board {
         // test
         let c = new GCell(this.#backCellLayer, this.#frontCellLayer, 2, 3);
         c.addColor("#AA0000").addColor("#0000AA").addColor("#008800").addColor("#888888");
-
+        c.addDigit(8, 'NE', '#550000');
+        c.addDigit(9, 'NE', '#550000');
+        c.addDigit(3, 'SW', '#550000');
+        c.addDigit(1, 'SE', '#000055');
+        c.setPrincipalDigit(5, '#000000');
     }
 
     /**
