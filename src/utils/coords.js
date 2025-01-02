@@ -3,9 +3,9 @@
 import _ from 'lodash';
 
 class Coords {
-    /** @type {Number} */
+    /** @type {number} */
     #x;
-    /** @type {Number} */
+    /** @type {number} */
     #y;
 
     static REGEX = "[A-Za-z][A-Za-z0-9]"
@@ -51,7 +51,7 @@ class Coords {
      * a = -1 ; A = -0.5
      * ou digit 0-9
      * @param {string} letter un caractère
-     * @returns {Number}
+     * @returns {number}
      */
     static letterToValue(letter) {
         if (letter.length != 1) {
@@ -74,8 +74,8 @@ class Coords {
 
     /**
      * Constructeur
-     * @param {Number} x 
-     * @param {Number} y 
+     * @param {number} x 
+     * @param {number} y 
      */
     constructor(x,y) {
        this.#x = x;
@@ -84,7 +84,7 @@ class Coords {
 
     /**
      * Accesseur x
-     * @returns {Number}
+     * @returns {number}
      */
     get x() {
         return this.#x;
@@ -92,7 +92,7 @@ class Coords {
 
     /**
      * Accesseur y
-     * @returns {Number}
+     * @returns {number}
      */
     get y() {
         return this.#y;
@@ -100,7 +100,7 @@ class Coords {
 
     /**
      * Accesseur line = y
-     * @returns {Number}
+     * @returns {number}
      */
     get line() {
         return this.#y;
@@ -108,7 +108,7 @@ class Coords {
 
     /**
      * Accesseur col = x
-     * @returns {Number}
+     * @returns {number}
      */
     get col() {
         return this.#x;
@@ -116,7 +116,7 @@ class Coords {
 
     /**
      * Accesseur paire [x,y]
-     * @returns {Array<Number>}
+     * @returns {Array<number>}
      */
     get xy() {
         return [this.#x, this.#y];
