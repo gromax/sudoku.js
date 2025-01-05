@@ -171,6 +171,18 @@ class Canvas {
         let xyValues = this.unitToValue(coords);
         return this.#group.polyline(xyValues);
     }
+    
+    /**
+     * renvoie un nœud ligne
+     * @param {Coords|[number, number]} start 
+     * @param {Coords|[number, number]} end 
+     * @returns {SVG.Line}
+     */
+    segment(start, end) {
+        let [x1, y1] = this.unitToValue(start);
+        let [x2, y2] = this.unitToValue(end);
+        return this.#group.line(x1, y1, x2, y2);
+    }
 
     /**
      * Crée un objet texte SVG
