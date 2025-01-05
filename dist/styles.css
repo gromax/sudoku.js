@@ -67,3 +67,10 @@ div.error {
 .errorline { color:crimson; }
 .validline { color:forestgreen; }
 .message { margin-block-start: 1px; margin-block-end: 1px; }
+
+svg text{
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+ }
