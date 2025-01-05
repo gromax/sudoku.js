@@ -3,6 +3,7 @@ import { Canvas } from "../graphic/canvas";
 import { Button } from "./button";
 import { Radio } from "./radio";
 import { Board } from "../graphic/board";
+import { DIRECTION } from "../constantes";
 
 
 
@@ -43,10 +44,26 @@ class Pad {
             }
         );
         (new Button(this.#canvas, 0, 3, "d")).addPicto("eraser");
-        (new Button(this.#canvas, 1, 0, "d")).addPicto("left");
-        (new Button(this.#canvas, 1, 1, "d")).addPicto("top");
-        (new Button(this.#canvas, 1, 2, "d")).addPicto("right");
-        (new Button(this.#canvas, 1, 3, "d")).addPicto("bottom");
+        (new Button(this.#canvas, 1, 0, "d")).addPicto("left").assignCallBack(
+            function(e){
+                board.toggleBorderColor(self.selectedColor, DIRECTION.LEFT);
+            }
+        );
+        (new Button(this.#canvas, 1, 1, "d")).addPicto("top").assignCallBack(
+            function(e){
+                board.toggleBorderColor(self.selectedColor, DIRECTION.UP);
+            }
+        );
+        (new Button(this.#canvas, 1, 2, "d")).addPicto("right").assignCallBack(
+            function(e){
+                board.toggleBorderColor(self.selectedColor, DIRECTION.RIGHT);
+            }
+        );
+        (new Button(this.#canvas, 1, 3, "d")).addPicto("bottom").assignCallBack(
+            function(e){
+                board.toggleBorderColor(self.selectedColor, DIRECTION.DOWN);
+            }
+        );
         (new Button(this.#canvas, 2, 0, "d")).addPicto("selection");
 
         this.#radioPosition = new Radio([
