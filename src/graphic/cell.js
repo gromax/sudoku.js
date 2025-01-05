@@ -48,7 +48,7 @@ class GCell {
      * @returns {GCell}
      */
     addColor(color) {
-        if (this.#colors.length >= 4) {
+        if ((this.#colors.length >= 4) || this.hasColor(color)) {
             return this;
         }
         this.#colors.push({color:color, opacity:GCell.OPACITY});
@@ -80,6 +80,32 @@ class GCell {
         this.#colors = [];
         this.#refreshColor();
         return this;
+    }
+
+    /**
+     * renvoie vrai si la couleur est présente
+     * @param string*} color 
+     * @returns {boolean}
+     */
+    hasColor(color) {
+        for (let i in this.#colors) {
+            if (this.#colors[i].color == color) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * bascule la présence d'une couleur
+     * @param {string} color 
+     * @returns {GCell}
+     */
+    toggleColor(color) {
+        if (this.hasColor(color)) {
+            return this.removeColor(color);
+        }
+        return this.addColor(color);
     }
 
     /**
@@ -168,8 +194,6 @@ class GCell {
         }
         return this;
     }
-
-
 
     /**
      * met à jour l'affichage des couleurs
