@@ -1,4 +1,5 @@
 import { Canvas } from './canvas';
+import { DIRECTION } from '../constantes';
 
 class Selection {
     static STROKE = { color:"#AAAAFF", width:5};
@@ -38,6 +39,20 @@ class Selection {
             return -1;
         }
         return line*this.#width + col;
+    }
+
+    /**
+     * renvoie [line,col] correspondant à un index
+     * @param {number} index
+     * @returns {[number,number]}
+     */
+    lineCol(index) {
+        if ((index <0) || (index >= this.#states.length)) {
+            throw new Error(`indice:${index} invalide !`);
+        }
+        let line = Math.floor(index/this.#width);
+        let col = index - this.#width*line;
+        return [line, col];
     }
 
     /**
@@ -127,7 +142,87 @@ class Selection {
         return this.#states[i];
     }
 
+    /**
+     * renvoie les indices des cellules sur le bord demandé
+     * @param {number} direction
+     * @returns {Array<number>}
+     */
+    getBorder(direction) {
+        if (direction == DIRECTION.LEFT) {
+            return this.#getLeft();
+        } else if (direction == DIRECTION.RIGHT) {
+            return this.#getRight();
+        } else if (direction == DIRECTION.UP) {
+            return this.#getTop();
+        } else if (direction == DIRECTION.DOWN) {
+            return this.#getBottom();
+        }
+        throw new Error(`direction ${direction} invalide !`);
+    }
 
+    /**
+     * renvoie les indices des cellules sur le bord gauche
+     * @returns {Array<number>}
+     */
+    #getLeft() {
+        let out = [];
+        for (let line=0; line<this.#height; line++) {
+            for (let col=0; col<this.#width; col++) {
+                if (this.isSelected(line, col) && !this.isSelected(line, col-1)) {
+                    out.push(this.index(line, col));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * renvoie les indices des cellules sur le bord droit
+     * @returns {Array<number>}
+     */
+    #getRight() {
+        let out = [];
+        for (let line=0; line<this.#height; line++) {
+            for (let col=0; col<this.#width; col++) {
+                if (this.isSelected(line, col) && !this.isSelected(line, col+1)) {
+                    out.push(this.index(line, col));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * renvoie les indices des cellules sur le bord haut
+     * @returns {Array<number>}
+     */
+    #getTop() {
+        let out = [];
+        for (let line=0; line<this.#height; line++) {
+            for (let col=0; col<this.#width; col++) {
+                if (this.isSelected(line, col) && !this.isSelected(line-1, col)) {
+                    out.push(this.index(line, col));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * renvoie les indices des cellules sur le bord haut
+     * @returns {Array<number>}
+     */
+    #getBottom() {
+        let out = [];
+        for (let line=0; line<this.#height; line++) {
+            for (let col=0; col<this.#width; col++) {
+                if (this.isSelected(line, col) && !this.isSelected(line+1, col)) {
+                    out.push(this.index(line, col));
+                }
+            }
+        }
+        return out;
+    }
 
 }
 
