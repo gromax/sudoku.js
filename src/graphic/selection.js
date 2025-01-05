@@ -1,4 +1,3 @@
-import { CELLSIZE, GRIDSIZE } from '../constantes';
 import { Canvas } from './canvas';
 
 class Selection {
@@ -8,14 +7,37 @@ class Selection {
     #canvas;
     /** @type {Array<boolean>} */
     #states; // grille contenant false/true indiquant cellule sélectionnée
+    /** @type {number} */
+    #height;    // nombre de cellules en hauteur
+    /** @type {number} */
+    #width;     // nombre de cellules en largeur
     
+
     /**
      * constructeur
-     * @param {Canvas} parent 
+     * @param {Canvas} parent
+     * @param {number} width
+     * @param {number} height
      */
-    constructor(parent) {
+    constructor(parent, width, height) {
         this.#canvas = parent;
-        this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
+        this.#states = Array(width*height).fill(false);
+        this.#width = width;
+        this.#height = height;
+    }
+
+    /**
+     * renvoie l'index correspondant à une paire line, col
+     * renvoie -1 en cas de positon illégale
+     * @param {number} line 
+     * @param {number} col
+     * @returns {number}
+     */
+    index(line, col) {
+        if ((line <0) || (line >= this.#width) || (col <0) || (col>=this.#height)) {
+            return -1;
+        }
+        return line*this.#width + col;
     }
 
     /**
@@ -25,10 +47,10 @@ class Selection {
      * @param {boolean} shiftPressed touche shift pressée
      */
     select(x, y, shiftPressed) {
-        let line = Math.floor(y/CELLSIZE) - 1;
-        let col = Math.floor(x/CELLSIZE) - 1;
+        let line = Math.floor(this.#canvas.valueToUnit(y));
+        let col = Math.floor(this.#canvas.valueToUnit(x));
         if (!shiftPressed){
-            this.#states = Array(GRIDSIZE*GRIDSIZE).fill(false);
+            this.#states = Array(this.#width*this.#height).fill(false);
         }
         this.#addSquare(line, col); 
      }
@@ -49,18 +71,18 @@ class Selection {
     #refresh(){
         this.#canvas.clear();
         let coords = [];
-        for (let line=0; line<GRIDSIZE; line++){
-            for (let col=0; col<GRIDSIZE; col++){
-                if (this.#states[line*GRIDSIZE+col]) {
-                    //let s = this.#canvas.square(line, col, 1);
-                    //s.fill(Selection.FILL).stroke('none');
+        for (let line=0; line<this.#height; line++){
+            for (let col=0; col<this.#width; col++){
+                if (this.isSelected(line, col)) {
                     coords.push([line, col]);
                 }
             }
         }
-        let polys = this.#canvas.cadre(coords, 0);
-        for (let poly of polys){
-            poly.stroke(Selection.STROKE).fill(Selection.FILL);
+        if (coords.length!=0) {
+            let polys = this.#canvas.cadre(coords, 0);
+            for (let poly of polys){
+                poly.stroke(Selection.STROKE).fill(Selection.FILL);
+            }
         }
     }
 
@@ -70,10 +92,39 @@ class Selection {
      * @param {number} col 
      */
     #toggle(line, col){
-        if ((line<0) || (line>=GRIDSIZE) || (col<0) || (col>=GRIDSIZE)) {
+        let i = this.index(line, col);
+        if (i==-1) {
             return;
         }
-        this.#states[line*GRIDSIZE+col] = !this.#states[line*GRIDSIZE+col];
+        this.#states[i] = !this.#states[i];
+    }
+
+    /**
+     * renvoie les index des cellules sélectionnées
+     * @returns {Array<number>}
+     */
+    get_selecteds_index() {
+        let out = [];
+        for (let i=0; i<this.#states.length; i++){
+            if (this.#states[i]) {
+                out.push(i);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * indique si la cellule en line, col est sélectionnée
+     * @param {number} line
+     * @param {number} col
+     * @returns {boolean}
+     */
+    isSelected(line, col) {
+        let i = this.index(line, col);
+        if (i==-1) {
+            return false;
+        }
+        return this.#states[i];
     }
 
 
