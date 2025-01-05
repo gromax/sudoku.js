@@ -148,7 +148,7 @@ class Canvas {
            size: diamètre
            dessine un disque
         */
-        let d = this.#group.circle(size*this.#unit, size*this.#unit);
+        let d = this.#group.circle(size*this.#unit);
         d.move((col-size/2+this.#marge)*this.#unit, (line-size/2+this.#marge)*this.#unit);
         return d;
     }
