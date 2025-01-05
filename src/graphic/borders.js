@@ -1,10 +1,9 @@
 import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
-
+import { DIRECTION } from '../constantes';
 
 class Junction {
-    static RADIUS = 0.05;
     static DEFAULTFILL = '#000000';
     /** @type {SVG.Line} */
     #node;
@@ -19,7 +18,7 @@ class Junction {
      * @param {number} col 
      */
     constructor(canvas, line, col) {
-        this.#node = canvas.disc(line, col, Junction.RADIUS);
+        this.#node = canvas.disc(line, col, Segment.WIDTH/canvas.unit);
         this.#node.fill('none').stroke('none');
         this.#edges = [];
     }    
@@ -36,7 +35,7 @@ class Junction {
 
     refresh() {
         let colors = [];
-        for (s of this.#edges) {
+        for (let s of this.#edges) {
             let c = s.color;
             if ((c == 'none')||(colors.indexOf(c) != -1)) {
                 continue;
@@ -56,7 +55,7 @@ class Junction {
 }
 
 class Segment {
-    WIDTH = 2;
+    static WIDTH = 10;
     /** @type {SVG.Line} */
     #node
 
@@ -109,7 +108,7 @@ class Segment {
     setColor(color) {
         this.#color = color;
         this.#node.stroke({color:color, width:Segment.WIDTH});
-        for (j of this.#extremity) {
+        for (let j of this.#extremity) {
             j.refresh();
         }
         return this;
@@ -192,6 +191,26 @@ class Borders {
     }
 
     /**
+     * renvoie le bord demandé
+     * @param {number} direction 
+     * @param {number} line 
+     * @param {number} col 
+     * @returns {Segment}
+     */
+    border(direction, line, col) {
+        if (direction == DIRECTION.LEFT) {
+            return this.left(line, col);
+        } else if (direction == DIRECTION.RIGHT) {
+            return this.right(line, col);
+        } else if (direction == DIRECTION.UP) {
+            return this.up(line, col);
+        } else if (direction == DIRECTION.DOWN) {
+            return this.down(line, col);
+        }
+        throw new Error(`direction ${direction} invalide !`);
+    }
+
+    /**
      * renvoie le segment supérieur
      * @param {number} line 
      * @param {number} col 
@@ -236,7 +255,7 @@ class Borders {
      * @param {number} col 
      * @returns {Segment}
      */
-    left(line, col) {
+    right(line, col) {
         if ((line<0) || (line>=this.#height) || (col<0) || (col>=this.#width)) {
             throw new Error(`line:${line} col:${col} n'est pas dans la grille !`);
         }
