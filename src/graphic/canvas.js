@@ -43,6 +43,14 @@ class Canvas {
     }
 
     /**
+     * renvoie le nœud svg
+     * @returns {SVG.SVG}
+     */
+    node() {
+        return this.#group;
+    }
+
+    /**
      * Renvoie un code #rgb d'après une lettre codant la couleur
      * @param {string} code 
      * @returns {string}
@@ -80,6 +88,20 @@ class Canvas {
             return this.unitToValue([u.x, u.y]);
         }
         return (u+this.#marge)*this.#unit;
+    }
+
+    /**
+     * calcule une (ou plusieurs) valeurs dans l'unitécoordonnées tenant compte de la taille de l'unité
+     * en pixels et de la marge.
+     * @param {Array<number>|number} x 
+     * @returns {Array<number>|number}
+     */
+    valueToUnit(x) {
+        if (Array.isArray(x)) {
+            let that = this;
+            return _.map(x, function(v){ return that.valueToUnit(v); });
+        }
+        return x/this.#unit - this.#marge;
     }
 
     /**
