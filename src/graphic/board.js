@@ -1,11 +1,13 @@
 /* Gère la création des la grille */
-import $ from 'jquery';
+import _ from 'lodash';
+import { DIRECTION } from '../constantes';
 import { SVG } from '@svgdotjs/svg.js';
 
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
 import { Selection } from './selection';
 import { GCell } from './cell';
+import { Borders } from './borders';
 
 class Board {
     static SIZE = 1100;
@@ -33,6 +35,8 @@ class Board {
     #frontCellLayer // canvas pour dessiner la partie avant sélection
     /** @type {Array<GCell} */
     #cells;
+    /** @type {Borders} */
+    #borders;
 
     /**
      * constructure
@@ -99,6 +103,8 @@ class Board {
                 this.#cells.push(c);
             }
         }
+
+        this.#borders = new Borders(this.#frontCellLayer, this.#width, this.#height);
     }
 
     /**
@@ -358,6 +364,39 @@ class Board {
             }
         }
     }
+
+    /**
+     * change l'état de des segments sur la gauche de la sélection
+     * @param {string} color
+     * @param {number} direction
+     */
+    toggleBorderColor(color, direction) {
+        let index = this.#selection.getBorder(direction);
+        if (index.length == 0) {
+            return;
+        }
+        if (index.length == 1) {
+            let [line, col] = this.#selection.lineCol(index[0]);
+            this.#borders.border(direction, line, col).toggleColor(color);
+            return;
+        }
+        let segs = [];
+        for (let i of index) {
+            let [line, col] = this.#selection.lineCol(i);
+            let s = this.#borders.border(direction, line, col);
+            segs.push(s);
+        }
+        let all_have = _.every(segs, function(s){ return s.color == color});
+        for (let s of segs) {
+            if (all_have) {
+                s.hide();
+            } else {
+                s.setColor(color);
+            }
+        }
+    }
+
+
 }
 
 export { Board };
