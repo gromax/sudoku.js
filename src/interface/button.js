@@ -1,5 +1,19 @@
+import $ from 'jquery';
 import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from '../graphic/canvas';
+
+const PICTOS = {
+    "bell":      ["./img/bell.svg", -152, -172, .13],
+    "paint":     ["./img/paint.svg", 29, 29, 2],
+    "eraser":    ["./img/eraser.svg", 29, 29, 2.5],
+    "left":      ["./img/left_border.svg", 30, 30, 2.5],
+    "right":     ["./img/right_border.svg", 30, 30, 2.5],
+    "top":       ["./img/top_border.svg", 30, 30, 2.5],
+    "bottom":    ["./img/bottom_border.svg", 30, 30, 2.5],
+    "selection": ["./img/selection.svg", 30, 30, 2.5],
+    "pen":       ["./img/pen.svg", 29, 29, 2.5],
+};
+
 
 class Button {
     static STROKE = { width:10, color:"#888888" };
@@ -108,7 +122,7 @@ class Button {
      */
     mouseup(e){
         if (this.#callBack != null) {
-            this.#callBack(this, e);
+            this.#callBack(e);
         }
         if (this.bistable && !this.selected){
             this.setSelected(true);
@@ -149,6 +163,26 @@ class Button {
         t.stroke('none').fill({'color':color});
         this.#group.add(t);
         t.backward();
+        return this;
+    }
+
+    addPicto(name) {
+        if (typeof PICTOS[name] == 'undefined') {
+            throw new Error(`Picto [${name}] inconnu !`);
+        }
+        let node = this.#canvas.node();
+        let [filename, x, y, s] = PICTOS[name];
+        let [x0, y0] = this.#canvas.unitToValue([this.#col, this.#line]);
+        let selfGroup = this.#group;
+        $.get(filename, function(data) {
+            let $tmp = $('svg', data);
+            node.svg($tmp.html());
+            let picto = SVG(node.node.lastChild);
+            picto.move(x0+x,y0+y).scale(s);
+            selfGroup.add(picto);
+            picto.backward();
+
+        }, 'xml');
         return this;
     }
 
