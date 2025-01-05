@@ -1,5 +1,5 @@
 /* Gère la création des la grille */
-
+import $ from 'jquery';
 import { SVG } from '@svgdotjs/svg.js';
 
 import { Canvas } from './canvas';
@@ -25,12 +25,14 @@ class Board {
     #decorations;    // conteneur pour les dessins faits sur la grille
     /** @type {Canvas} */
     #subgridLayer; // canvas en dessous de la grille
-    /** @type {Canvas} */
-    #selectionLayer // canvas pour dessiner la sélection
+    /** @type {Selection} */
+    #selection // canvas pour dessiner la sélection
     /** @type {Canvas} */
     #backCellLayer // canvas pour dessiner la partie arrière des cellules
     /** @type {Canvas} */
     #frontCellLayer // canvas pour dessiner la partie avant sélection
+    /** @type {Array<GCell} */
+    #cells;
 
     /**
      * constructure
@@ -45,16 +47,8 @@ class Board {
         this.#makeGrid(format.trim());
         this.parse(commande.trim());
         let self = this;
-        this.#content.click(function(e){self.click(e);})
-
-        // test
-        let c = new GCell(this.#backCellLayer, this.#frontCellLayer, 2, 3);
-        c.addColor("#AA0000").addColor("#0000AA").addColor("#008800").addColor("#888888");
-        c.addDigit(8, 'NE', '#550000');
-        c.addDigit(9, 'NE', '#550000');
-        c.addDigit(3, 'SW', '#550000');
-        c.addDigit(1, 'SE', '#000055');
-        c.setPrincipalDigit(5, '#000000');
+        this.#content.click(function(e){self.click(e);});
+        
     }
 
     /**
@@ -67,7 +61,7 @@ class Board {
         let shiftPressed = e.shiftKey;
         let x = e.offsetX;
         let y = e.offsetY;
-        this.#selectionLayer.select(x, y, shiftPressed);
+        this.#selection.select(x, y, shiftPressed);
     }
 
     /**
@@ -96,7 +90,15 @@ class Board {
         this.#drawGrid(g.type);
         this.#decorations = this.#canvas.sublayer();
         this.#frontCellLayer = this.#canvas.sublayer();
-        this.#selectionLayer = new Selection(this.#canvas.sublayer());
+        this.#selection = new Selection(this.#canvas.sublayer(), this.#width, this.#height);
+        
+        this.#cells = [];
+        for (let line=0; line < this.#height; line++){
+            for (let col=0; col < this.#width; col++){
+                let c = new GCell(this.#backCellLayer, this.#frontCellLayer, line, col);
+                this.#cells.push(c);
+            }
+        }
     }
 
     /**
@@ -326,7 +328,36 @@ class Board {
         if (type == 'S') {
             this.#canvas.grid(this.#height, this.#width, Board.GRIDTHICKSTROKE, 3);
         }
-    }   
+    }
+    
+    /**
+     * change l'état de la couleur donnée pour les cellules de la sélection
+     * @param {string} color
+     */
+    toggleSelColor(color) {
+        let index = this.#selection.get_selecteds_index();
+        if (index.length == 0) {
+            return;
+        }
+        if (index.length == 1) {
+            this.#cells[index[0]].toggleColor(color);
+            return;
+        }
+        let all_have = true;
+        for (let i of index) {
+            if (!this.#cells[i].hasColor(color)) {
+                all_have = false;
+                break;
+            }
+        }
+        for (let i of index) {
+            if (all_have) {
+                this.#cells[i].removeColor(color);
+            } else {
+                this.#cells[i].addColor(color);
+            }
+        }
+    }
 }
 
 export { Board };
