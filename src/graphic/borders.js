@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
@@ -208,6 +210,22 @@ class Borders {
             return this.down(line, col);
         }
         throw new Error(`direction ${direction} invalide !`);
+    }
+
+    /**
+     * renvoie le bord demandé
+     * @param {number} direction 
+     * @param {number|Array<number>} index 
+     * @returns {Segment|Array<Segment>}
+     */
+    borderByIndex(direction, index) {
+        if (Array.isArray(index)) {
+            let that = this;
+            return _.map(index, function(i){ return that.borderByIndex(direction, i); });
+        }
+        let line = Math.floor(index/this.#width);
+        let col = index - line*this.#width;
+        return this.border(direction, line, col);
     }
 
     /**
