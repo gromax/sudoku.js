@@ -12,6 +12,8 @@ class Selection {
     #height;    // nombre de cellules en hauteur
     /** @type {number} */
     #width;     // nombre de cellules en largeur
+    /** @type {boolean} */
+    #verrou = false;
     
 
     /**
@@ -64,7 +66,7 @@ class Selection {
     select(x, y, shiftPressed) {
         let line = Math.floor(this.#canvas.valueToUnit(y));
         let col = Math.floor(this.#canvas.valueToUnit(x));
-        if (!shiftPressed){
+        if (!shiftPressed && !this.#verrou){
             this.#states = Array(this.#width*this.#height).fill(false);
         }
         this.#addSquare(line, col); 
@@ -222,6 +224,20 @@ class Selection {
             }
         }
         return out;
+    }
+
+    /**
+     * désactive le verrou
+     */
+    resetVerrou() {
+        this.#verrou = false;
+    }
+
+    /**
+     * active le verrouillage
+     */
+    setVerrou() {
+        this.#verrou = true;
     }
 
 }
