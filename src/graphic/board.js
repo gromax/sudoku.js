@@ -366,7 +366,7 @@ class Board {
     }
 
     /**
-     * change l'état de des segments sur la gauche de la sélection
+     * change l'état de des segments dans la direction indiquée sur la sélection
      * @param {string} color
      * @param {number} direction
      */
@@ -394,6 +394,42 @@ class Board {
                 s.setColor(color);
             }
         }
+    }
+
+    /**
+     * change l'état des bords extérieurs de la sélection
+     * @param {string} color 
+     */
+    toggleOuterBorderColor(color) {
+        let segs = _.union(
+            this.#borders.borderByIndex(DIRECTION.UP, this.#selection.getBorder(DIRECTION.UP)),
+            this.#borders.borderByIndex(DIRECTION.DOWN, this.#selection.getBorder(DIRECTION.DOWN)),
+            this.#borders.borderByIndex(DIRECTION.LEFT, this.#selection.getBorder(DIRECTION.LEFT)),
+            this.#borders.borderByIndex(DIRECTION.RIGHT, this.#selection.getBorder(DIRECTION.RIGHT))
+        );
+        if (_.every(segs, function(s){ return s.color == color})) {
+            for (let s of segs) {
+                s.hide();
+            }
+        } else {
+            for (let s of segs) {
+                s.setColor(color);
+            }
+        }
+    }
+
+    /**
+     * active le verrou sur la sélection
+     */
+    setSelectionVerrou() {
+        this.#selection.setVerrou();
+    }
+
+    /**
+     * désactive le verrou sur la sélection
+     */
+    resetSelectionVerrou() {
+        this.#selection.resetVerrou();
     }
 
 
