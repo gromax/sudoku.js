@@ -39,32 +39,45 @@ class Pad {
         (new Button(this.#canvas, 0, 0, "a")).addPicto("bell");
         (new Button(this.#canvas, 0, 1, "b")).addPicto("pen");
         (new Button(this.#canvas, 0, 2, "c")).addPicto("paint").assignCallBack(
-            function(e){
+            function(b, e){
                 board.toggleSelColor(self.selectedColor);
             }
         );
-        (new Button(this.#canvas, 0, 3, "d")).addPicto("eraser");
-        (new Button(this.#canvas, 1, 0, "d")).addPicto("left").assignCallBack(
-            function(e){
+        (new Button(this.#canvas, 0, 3, "eraser")).addPicto("eraser");
+        (new Button(this.#canvas, 1, 0, "border-left")).addPicto("left").assignCallBack(
+            function(b, e){
                 board.toggleBorderColor(self.selectedColor, DIRECTION.LEFT);
             }
         );
-        (new Button(this.#canvas, 1, 1, "d")).addPicto("top").assignCallBack(
-            function(e){
+        (new Button(this.#canvas, 1, 1, "border-top")).addPicto("top").assignCallBack(
+            function(b, e){
                 board.toggleBorderColor(self.selectedColor, DIRECTION.UP);
             }
         );
-        (new Button(this.#canvas, 1, 2, "d")).addPicto("right").assignCallBack(
-            function(e){
+        (new Button(this.#canvas, 1, 2, "border-right")).addPicto("right").assignCallBack(
+            function(b, e){
                 board.toggleBorderColor(self.selectedColor, DIRECTION.RIGHT);
             }
         );
-        (new Button(this.#canvas, 1, 3, "d")).addPicto("bottom").assignCallBack(
-            function(e){
+        (new Button(this.#canvas, 1, 3, "border-bottom")).addPicto("bottom").assignCallBack(
+            function(b, e){
                 board.toggleBorderColor(self.selectedColor, DIRECTION.DOWN);
             }
         );
-        (new Button(this.#canvas, 2, 0, "d")).addPicto("selection");
+        (new Button(this.#canvas, 2, 0, "border-outer")).addPicto("outer").assignCallBack(
+            function(b, e){
+                board.toggleOuterBorderColor(self.selectedColor, DIRECTION.DOWN);
+            }
+        );
+        (new Button(this.#canvas, 2, 1, "d")).addPicto("selection").setBistable().assignCallBack(
+            function(b, e){
+                if (b.selected) {
+                    board.setSelectionVerrou();
+                } else {
+                    board.resetSelectionVerrou();
+                }
+            }
+        );
 
         this.#radioPosition = new Radio([
             (new Button(this.#canvas, 0, 5, "nw")).drawSquare(Button.FILLDARKER, 0.2, 0.2, 0.3),
