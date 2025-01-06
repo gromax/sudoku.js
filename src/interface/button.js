@@ -12,6 +12,7 @@ const PICTOS = {
     "bottom":    ["./img/bottom_border.svg", 30, 30, 2.5],
     "selection": ["./img/selection.svg", 30, 30, 2.5],
     "pen":       ["./img/pen.svg", 29, 29, 2.5],
+    "outer":     ["./img/outer_border.svg", 29, 29, 2.5],
 };
 
 
@@ -121,13 +122,13 @@ class Button {
      * @param {Event} e 
      */
     mouseup(e){
-        if (this.#callBack != null) {
-            this.#callBack(e);
-        }
         if (this.bistable && !this.selected){
             this.setSelected(true);
         } else {
             this.setSelected(false);
+        }
+        if (this.#callBack != null) {
+            this.#callBack(this, e);
         }
     }
 
