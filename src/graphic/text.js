@@ -183,6 +183,14 @@ class Text {
     }
 
     /**
+     * accesseur vers group
+     * @returns {SVG.G}
+     */
+    get group() {
+        return this.#group;
+    }
+
+    /**
      * Fait pivoter dans le sens horaire
      * @returns {Text}
      */
