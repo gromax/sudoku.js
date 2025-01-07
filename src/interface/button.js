@@ -154,16 +154,14 @@ class Button {
     /**
      * trace un carré de couleur sur le bouton
      * @param {string} text
-     * @param {number} xoffset
-     * @param {number} yoffset
      * @param {string} color
      * @returns {Button}
      */
-    drawText(text, xoffset, yoffset, color = "#000000"){
-        let t = this.#canvas.text(text, [this.#col + xoffset, this.#line + yoffset], 0.5);
-        t.stroke('none').fill({'color':color});
-        this.#group.add(t);
-        t.backward();
+    drawText(text, color = "#000000"){
+        let t = this.#canvas.text(text, [this.#col + .5, this.#line + .5], 0.7).anchor("C");
+        t.stroke({'color':color}).fill('none');
+        this.#group.add(t.group);
+        t.group.backward();
         return this;
     }
 
