@@ -87,22 +87,23 @@ class Pad {
                 let tag = `${i*3+j+1}`;
                 (new Button(this.#canvas, i+1, j, tag)).drawText(tag).assignCallBack(
                     function(b, e){
-                        ;
+                        board.toggleDigit(b.tag, self.position, self.selectedColor);
                     }
                 );
             }
         }
 
         this.#radioPosition = new Radio([
-            (new Button(this.#canvas, 1, 5, "nw")).drawSquare(Button.FILLDARKER, 0.2, 0.2, 0.3),
-            (new Button(this.#canvas, 1, 6, "n")).drawSquare(Button.FILLDARKER, 0.35, 0.2, 0.3),
-            (new Button(this.#canvas, 1, 7, "ne")).drawSquare(Button.FILLDARKER, 0.5, 0.2, 0.3),
-            (new Button(this.#canvas, 2, 5, "w")).drawSquare(Button.FILLDARKER, 0.2, 0.35, 0.3),
-            (new Button(this.#canvas, 2, 6, "c")).drawSquare(Button.FILLDARKER, 0.35, 0.35, 0.3),
-            (new Button(this.#canvas, 2, 7, "e")).drawSquare(Button.FILLDARKER, 0.5, 0.35, 0.3),
-            (new Button(this.#canvas, 3, 5, "sw")).drawSquare(Button.FILLDARKER, 0.2, 0.5, 0.3),
-            (new Button(this.#canvas, 3, 6, "s")).drawSquare(Button.FILLDARKER, 0.35, 0.5, 0.3),
-            (new Button(this.#canvas, 3, 7, "se")).drawSquare(Button.FILLDARKER, 0.5, 0.5, 0.3)
+            (new Button(this.#canvas, 1, 5, "NW")).drawSquare(Button.FILLDARKER, 0.2, 0.2, 0.3),
+            (new Button(this.#canvas, 1, 6, "N")).drawSquare(Button.FILLDARKER, 0.35, 0.2, 0.3),
+            (new Button(this.#canvas, 1, 7, "NE")).drawSquare(Button.FILLDARKER, 0.5, 0.2, 0.3),
+            (new Button(this.#canvas, 2, 5, "W")).drawSquare(Button.FILLDARKER, 0.2, 0.35, 0.3),
+            (new Button(this.#canvas, 2, 6, "C")).drawSquare(Button.FILLDARKER, 0.35, 0.35, 0.3),
+            (new Button(this.#canvas, 2, 7, "E")).drawSquare(Button.FILLDARKER, 0.5, 0.35, 0.3),
+            (new Button(this.#canvas, 3, 5, "SW")).drawSquare(Button.FILLDARKER, 0.2, 0.5, 0.3),
+            (new Button(this.#canvas, 3, 6, "S")).drawSquare(Button.FILLDARKER, 0.35, 0.5, 0.3),
+            (new Button(this.#canvas, 3, 7, "SE")).drawSquare(Button.FILLDARKER, 0.5, 0.5, 0.3),
+            (new Button(this.#canvas, 0, 5, "P")).drawSquare(Button.FILLDARKER, 0.2, 0.2, 0.6)
         ]);
 
         this.#radioColor = new Radio([
