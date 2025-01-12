@@ -52,7 +52,6 @@ class Board {
         this.parse(commande.trim());
         let self = this;
         this.#content.click(function(e){self.click(e);});
-        
     }
 
     /**
@@ -430,6 +429,29 @@ class Board {
      */
     resetSelectionVerrou() {
         this.#selection.resetVerrou();
+    }
+
+    /**
+     * ajoute ou supprime un digit
+     * @param {number|string} digit
+     * @param {string} anchor
+     * @param {string} color
+     */
+    toggleDigit(digit, anchor, color) {
+        let indexes = this.#selection.get_selecteds_index();
+        if (indexes.length == 0) {
+            return;
+        }
+        let cells = this.#cells;
+        if (_.every(indexes, function(i){ return cells[i].hasDigit(digit, anchor); })) {
+            for (let i of indexes) {
+                this.#cells[i].removeDigit(digit, anchor);
+            }
+        } else {
+            for (let i of indexes) {
+                this.#cells[i].addDigit(digit, anchor, color);
+            }
+        }
     }
 
 
