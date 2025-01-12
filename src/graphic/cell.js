@@ -4,6 +4,44 @@ import { Canvas } from './canvas';
 import { ANCRES } from '../constantes';
 import { Text } from './text';
 
+/**
+ * insère le digit à sa place, dans l'ordre
+ * @param {string} chaine
+ * @param {string} digit
+ * @returns {string}
+ */
+function addDigitIntoString(chaine, digit) {
+    for (let i in chaine) {
+        let car = chaine[i];
+        if (car == digit) {
+            return chaine;
+        }
+        if (car > digit) {
+            return chaine.substring(0,i) + digit + chaine.substring(i);
+        }
+    }
+    return chaine + digit;
+}
+
+/**
+ * enlève la première apparition de digit dans chaine
+ * @param {string} chaine 
+ * @param {string} digit 
+ * @returns {string}
+ */
+function removeDigitFromString(chaine, digit) {
+    for (let i in chaine) {
+        let car = chaine[i];
+        if (car == digit) {
+            return chaine.substring(0,i) + chaine.substring(i+1);
+        }
+    }
+    return chaine;
+}
+
+
+
+
 class GCell {
     static OPACITY = 0.5;
     /** @type {number} */
@@ -122,6 +160,10 @@ class GCell {
         if (digit.length != 1) {
             throw new Error(`[${digit}] : Un seul digit à la fois !`);
         }
+        if (anchor == 'P') {
+            this.setPrincipalDigit(digit, color);
+            return this;
+        }
         if (typeof ANCRES[anchor] == 'undefined') {
             throw new Error(`[${anchor}] : ancre indéfinie !`);
         }
@@ -134,8 +176,70 @@ class GCell {
             currentText = this.#texts[anchor].text;
             this.#texts[anchor].removeSVG();
         }
-        this.#texts[anchor] = this.#front.text(currentText + digit, this.anchor(anchor), .3).anchor(anchor).stroke(color);
+        let newText = addDigitIntoString(currentText, digit);
+        this.#texts[anchor] = this.#front.text(newText, this.anchor(anchor), .3).anchor(anchor).stroke(color);
         return this;
+    }
+
+    /**
+     * enlève un digit à l'ancre indiquée
+     * @param {number|string} digit 
+     * @param {string} anchor 
+     * @returns {GCell}
+     */
+    removeDigit(digit, anchor) {
+        if (typeof digit == 'number'){
+            digit = digit.toString();
+        }
+        if (digit.length != 1) {
+            throw new Error(`[${digit}] : Un seul digit à la fois !`);
+        }
+        if ((anchor!='P')&&(typeof ANCRES[anchor] == 'undefined')) {
+            throw new Error(`[${anchor}] : ancre indéfinie !`);
+        }
+        if (typeof this.#texts[anchor] == 'undefined'){
+            // rien à faire
+            return this;
+        }
+        let currentText = this.#texts[anchor].text;
+        let color = this.#texts[anchor].strokeColor;
+        if (typeof color == 'object') {
+            color == color.color;
+        }
+        this.#texts[anchor].removeSVG();
+        let newText = removeDigitFromString(currentText, digit);
+        if (newText == "") {
+            delete this.#texts[anchor]
+        } else {
+            this.#texts[anchor] = this.#front.text(newText, this.anchor(anchor), .3).anchor(anchor).stroke(color);
+        }
+        return this;
+    }
+
+    /**
+     * 
+     * @param {number|string} digit 
+     * @param {string} anchor 
+     * @returns {bool}
+     */
+    hasDigit(digit, anchor) {
+        if (typeof digit == 'number'){
+            digit = digit.toString();
+        }
+        if (anchor == 'P') {
+            if (typeof this.#texts.P == 'undefined'){
+                return false;
+            }
+            return (this.#texts.P.text == digit);
+        }
+        if (typeof ANCRES[anchor] == 'undefined') {
+            throw new Error(`[${anchor}] : ancre indéfinie !`);
+        }
+        if (typeof this.#texts[anchor] == 'undefined') {
+            return false;
+        }
+        let candidats = this.#texts[anchor].text;
+        return (candidats.indexOf(digit) >= 0);
     }
 
     /**
@@ -176,10 +280,11 @@ class GCell {
             throw new Error(`[${digit}] : Un seul digit à la fois !`);
         }
         this.clearAllCandidats();
+        let lastColor = typeof this.#texts.P != 'undefined' ? this.#texts.P.strokeColor : '#000';
         if (typeof this.#texts.P != 'undefined'){
             this.#texts.P.removeSVG();
         }
-        this.#texts.P = this.#front.text(digit, this.anchor('C'), 1).anchor('C').stroke(color);
+        this.#texts.P = this.#front.text(digit, this.anchor('C'), 1).anchor('C').stroke(color||lastColor);
         return this;
     }
 
@@ -188,10 +293,11 @@ class GCell {
      * @returns {GCell}
      */
     removePrincipalDigit() {
-        if (typeof this.#texts.P != 'undefined'){
-            this.#texts.P.removeSVG();
-            delete this.#texts['P'];
+        if (typeof this.#texts.P == 'undefined'){
+            return this;
         }
+        this.#texts.P.removeSVG();
+        delete this.#texts['P'];
         return this;
     }
 
