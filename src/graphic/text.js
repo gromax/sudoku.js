@@ -36,6 +36,9 @@ class Text {
     /** @type {number} */
     #yAnchor = 0;
 
+    /**@type {string|Object} */
+    #stroke = '#000';
+
     /**
      * constructeur
      * @param {Canvas} parent 
@@ -95,6 +98,7 @@ class Text {
      * @returns {Text}
      */
     stroke(color) {
+        this.#stroke = color;
         this.#svgText.fill(color);
         if (this.#cadre.fill() != 'none') {
             this.#cadre.stroke(color);
@@ -140,6 +144,14 @@ class Text {
         this.#x += dx;
         this.#y += dy;
         return this;
+    }
+
+    /**
+     * accesseur pour couleur stroke
+     * @returns {string|object}
+     */
+    get strokeColor() {
+        return this.#stroke;
     }
 
     /**
