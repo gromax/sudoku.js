@@ -182,6 +182,18 @@ class GCell {
     }
 
     /**
+     * Renvoie vrai si la cellule à des candidats à cette ancre
+     * @param {string} anchor
+     * @returns {bool}
+     */
+    hasAnchor(anchor) {
+        if ((anchor != 'P') && (typeof ANCRES[anchor] == 'undefined')) {
+            throw new Error(`[${anchor}] : ancre indéfinie !`);
+        }
+        return (typeof this.#texts[anchor] != 'undefined');
+    }
+
+    /**
      * enlève un digit à l'ancre indiquée
      * @param {number|string} digit 
      * @param {string} anchor 
