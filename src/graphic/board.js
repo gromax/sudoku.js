@@ -8,6 +8,7 @@ import { Coords } from '../utils/coords';
 import { Selection } from './selection';
 import { GCell } from './cell';
 import { Borders } from './borders';
+import { History } from '../utils/history';
 
 class Board {
     static SIZE = 1100;
@@ -37,6 +38,8 @@ class Board {
     #cells;
     /** @type {Borders} */
     #borders;
+    /** @type {History} */
+    #history;
 
     /**
      * constructure
@@ -104,6 +107,7 @@ class Board {
         }
 
         this.#borders = new Borders(this.#frontCellLayer, this.#width, this.#height);
+        this.#history = new History(this.#width, this.#height);
     }
 
     /**
@@ -344,6 +348,7 @@ class Board {
         if (indexes.length == 0) {
             return;
         }
+        this.#history.pushCol(color, indexes);
         if (indexes.length == 1) {
             this.#cells[indexes[0]].toggleColor(color);
             return;
@@ -369,6 +374,10 @@ class Board {
      */
     clearColors() {
         let indexes = this.#selection.get_selecteds_index();
+        if (indexes.length == 0) {
+            return;
+        }
+        this.#history.pushClearCol(indexes);
         for (let i of indexes) {
             this.#cells[i].clearColors();
         }
@@ -380,17 +389,18 @@ class Board {
      * @param {number} direction
      */
     toggleBorderColor(color, direction) {
-        let index = this.#selection.getBorder(direction);
-        if (index.length == 0) {
+        let indexes = this.#selection.getBorder(direction);
+        if (indexes.length == 0) {
             return;
         }
-        if (index.length == 1) {
-            let [line, col] = this.#selection.lineCol(index[0]);
+        this.#history.pushBorder(indexes, color, direction);
+        if (indexes.length == 1) {
+            let [line, col] = this.#selection.lineCol(indexes[0]);
             this.#borders.border(direction, line, col).toggleColor(color);
             return;
         }
         let segs = [];
-        for (let i of index) {
+        for (let i of indexes) {
             let [line, col] = this.#selection.lineCol(i);
             let s = this.#borders.border(direction, line, col);
             segs.push(s);
@@ -410,6 +420,11 @@ class Board {
      * @param {string} color 
      */
     toggleOuterBorderColor(color) {
+        let indexes = this.#selection.get_selecteds_index();
+        if (indexes.length == 0) {
+            return;
+        }
+        this.#history.pushBorder(indexes, color, 'A');
         let segs = _.union(
             this.#borders.borderByIndex(DIRECTION.UP, this.#selection.getBorder(DIRECTION.UP)),
             this.#borders.borderByIndex(DIRECTION.DOWN, this.#selection.getBorder(DIRECTION.DOWN)),
@@ -452,6 +467,7 @@ class Board {
         if (indexes.length == 0) {
             return;
         }
+        this.#history.pushDigit(indexes, digit, anchor, color);
         let cells = this.#cells;
         if (_.every(indexes, function(i){ return cells[i].hasDigit(digit, anchor); })) {
             for (let i of indexes) {
@@ -473,6 +489,7 @@ class Board {
         if (indexes.length == 0) {
             return;
         }
+        this.#history.pushClearDigit(indexes, anchor);
         let cells = this.#cells;
         if (_.every(indexes, function(i){ return !cells[i].hasAnchor(anchor); })) {
             for (let i of indexes) {
@@ -484,6 +501,8 @@ class Board {
             }
         }
     }
+
+
 
 
 }
