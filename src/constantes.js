@@ -21,4 +21,16 @@ const ANCRES = {
     "C" : {x:0.5, y:0.5, clockwise:"C",  counterclockwise:"C" },
 }
 
-export { CELLSIZE, GRIDSIZE, SUBGRIDSIZE, DIRECTION, ANCRES };
+const COLORS = [
+    "#4287f5",
+    "#d42215",
+    "#0be629",
+    "#f2ee07",
+    "#000000",
+    "#8a8a8a",
+    "#f58a07",
+    "#eb42df",
+    "#b207f5"
+]
+
+export { CELLSIZE, GRIDSIZE, SUBGRIDSIZE, DIRECTION, ANCRES, COLORS };
