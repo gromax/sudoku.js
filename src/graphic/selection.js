@@ -1,6 +1,7 @@
 import { Canvas } from './canvas';
 import { DIRECTION } from '../constantes';
 
+
 class Selection {
     static STROKE = { color:"#AAAAFF", width:5};
     static FILL = { color:"#AAAAFF", opacity:0.5};
