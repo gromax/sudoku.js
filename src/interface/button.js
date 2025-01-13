@@ -6,6 +6,7 @@ const PICTOS = {
     "bell":      ["./img/bell.svg", -152, -172, .13],
     "paint":     ["./img/paint.svg", 29, 29, 2],
     "eraser":    ["./img/eraser.svg", 29, 29, 2.5],
+    "eraserc":   ["./img/eraser_color.svg", 29, 29, 2.5],
     "left":      ["./img/left_border.svg", 30, 30, 2.5],
     "right":     ["./img/right_border.svg", 30, 30, 2.5],
     "top":       ["./img/top_border.svg", 30, 30, 2.5],
@@ -13,6 +14,8 @@ const PICTOS = {
     "selection": ["./img/selection.svg", 30, 30, 2.5],
     "pen":       ["./img/pen.svg", 29, 29, 2.5],
     "outer":     ["./img/outer_border.svg", 29, 29, 2.5],
+    "undo":      ["./img/undo.svg", 29, 29, 2.5],
+    "redo":      ["./img/redo.svg", 29, 29, 2.5],
 };
 
 
