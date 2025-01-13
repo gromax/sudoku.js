@@ -3,7 +3,7 @@ import { Canvas } from "../graphic/canvas";
 import { Button } from "./button";
 import { Radio } from "./radio";
 import { Board } from "../graphic/board";
-import { DIRECTION } from "../constantes";
+import { DIRECTION, COLORS } from "../constantes";
 
 
 
@@ -124,17 +124,16 @@ class Pad {
             (new Button(this.#canvas, 0, 4, "P")).drawSquare(Button.FILLDARKER, 0.2, 0.2, 0.6)
         ]);
 
-        this.#radioColor = new Radio([
-            (new Button(this.#canvas, 1, 9, "#4287f5")).drawSquare("#4287f5", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 1, 10, "#d42215")).drawSquare("#d42215", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 1, 11, "#0be629")).drawSquare("#0be629", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 2, 9, "#f2ee07")).drawSquare("#f2ee07", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 2, 10, "#000000")).drawSquare("#000000", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 2, 11, "#8a8a8a")).drawSquare("#8a8a8a", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 3, 9, "#f58a07")).drawSquare("#f58a07", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 3, 10, "#eb42df")).drawSquare("#eb42df", 0.3, 0.3, 0.4),
-            (new Button(this.#canvas, 3, 11, "#b207f5")).drawSquare("#b207f5", 0.3, 0.3, 0.4)
-        ]);
+        let buttonsColor = [];
+        for (let i=1; i<3; i++){
+            for (let j=1; j<3; j++) {
+                let cindex = i*3+j;
+                let c = COLORS[cindex];
+                let b = (new Button(this.#canvas, c)).drawSquare(c, 0.3, 0.3, 0.4);
+                buttonsColor.push(b);
+            }
+        }
+        this.#radioColor = new Radio(buttonsColor);
     }
 
     /**
