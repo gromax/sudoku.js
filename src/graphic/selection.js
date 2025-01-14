@@ -1,6 +1,6 @@
 import { Canvas } from './canvas';
 import { DIRECTION } from '../constantes';
-
+import { Events } from '../utils/events';
 
 class Selection {
     static STROKE = { color:"#AAAAFF", width:5};
@@ -22,12 +22,32 @@ class Selection {
      * @param {Canvas} parent
      * @param {number} width
      * @param {number} height
+     * @param {Events} eventsGest
      */
-    constructor(parent, width, height) {
+    constructor(parent, width, height, eventsGest) {
         this.#canvas = parent;
         this.#states = Array(width*height).fill(false);
         this.#width = width;
         this.#height = height;
+        let self = this;
+        eventsGest.addEvent("selection", function(e,data) {
+            if (data == null) {
+                throw new Error("data est indéfini.");
+            }
+            if (data.selected) {
+                self.setVerrou();
+            } else {
+                self.resetVerrou();
+            }            
+        });
+        eventsGest.addEvent("gridClick", function(e,data) {
+            //let altPressed = e.altKey;
+            //let ctrlPressed = e.ctrlKey;
+            let shiftPressed = e.shiftKey;
+            let x = e.offsetX;
+            let y = e.offsetY;
+            self.select(x, y, shiftPressed);     
+        });
     }
 
     /**
@@ -145,87 +165,7 @@ class Selection {
         return this.#states[i];
     }
 
-    /**
-     * renvoie les indices des cellules sur le bord demandé
-     * @param {number} direction
-     * @returns {Array<number>}
-     */
-    getBorder(direction) {
-        if (direction == DIRECTION.LEFT) {
-            return this.#getLeft();
-        } else if (direction == DIRECTION.RIGHT) {
-            return this.#getRight();
-        } else if (direction == DIRECTION.UP) {
-            return this.#getTop();
-        } else if (direction == DIRECTION.DOWN) {
-            return this.#getBottom();
-        }
-        throw new Error(`direction ${direction} invalide !`);
-    }
 
-    /**
-     * renvoie les indices des cellules sur le bord gauche
-     * @returns {Array<number>}
-     */
-    #getLeft() {
-        let out = [];
-        for (let line=0; line<this.#height; line++) {
-            for (let col=0; col<this.#width; col++) {
-                if (this.isSelected(line, col) && !this.isSelected(line, col-1)) {
-                    out.push(this.index(line, col));
-                }
-            }
-        }
-        return out;
-    }
-
-    /**
-     * renvoie les indices des cellules sur le bord droit
-     * @returns {Array<number>}
-     */
-    #getRight() {
-        let out = [];
-        for (let line=0; line<this.#height; line++) {
-            for (let col=0; col<this.#width; col++) {
-                if (this.isSelected(line, col) && !this.isSelected(line, col+1)) {
-                    out.push(this.index(line, col));
-                }
-            }
-        }
-        return out;
-    }
-
-    /**
-     * renvoie les indices des cellules sur le bord haut
-     * @returns {Array<number>}
-     */
-    #getTop() {
-        let out = [];
-        for (let line=0; line<this.#height; line++) {
-            for (let col=0; col<this.#width; col++) {
-                if (this.isSelected(line, col) && !this.isSelected(line-1, col)) {
-                    out.push(this.index(line, col));
-                }
-            }
-        }
-        return out;
-    }
-
-    /**
-     * renvoie les indices des cellules sur le bord haut
-     * @returns {Array<number>}
-     */
-    #getBottom() {
-        let out = [];
-        for (let line=0; line<this.#height; line++) {
-            for (let col=0; col<this.#width; col++) {
-                if (this.isSelected(line, col) && !this.isSelected(line+1, col)) {
-                    out.push(this.index(line, col));
-                }
-            }
-        }
-        return out;
-    }
 
     /**
      * désactive le verrou
