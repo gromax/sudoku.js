@@ -44,10 +44,10 @@ class History {
     
     /**
      * ajoute un changement de couleur à l'historique
-     * @param {string} color 
      * @param {number[]} indexes 
+     * @param {string} color 
      */
-    pushCol(color, indexes) {
+    pushCol(indexes, color) {
         let code = this.#indexesToCode(indexes);
         let icol = COLORS.indexOf[color];
         if (icol == -1) {
