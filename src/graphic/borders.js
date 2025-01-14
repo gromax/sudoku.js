@@ -193,39 +193,107 @@ class Borders {
     }
 
     /**
-     * renvoie le bord demandé
-     * @param {number} direction 
-     * @param {number} line 
-     * @param {number} col 
-     * @returns {Segment}
+     * renvoie [line, col] correspondant à un index
+     * @param {number} index 
+     * @returns {[number,number]}
      */
-    border(direction, line, col) {
-        if (direction == DIRECTION.LEFT) {
-            return this.left(line, col);
-        } else if (direction == DIRECTION.RIGHT) {
-            return this.right(line, col);
-        } else if (direction == DIRECTION.UP) {
-            return this.up(line, col);
-        } else if (direction == DIRECTION.DOWN) {
-            return this.down(line, col);
-        }
-        throw new Error(`direction ${direction} invalide !`);
+    #lineCol(index) {
+        let line = Math.floor(index/this.#width);
+        let col = index - line*this.#width;
+        return [line, col];
     }
 
     /**
-     * renvoie le bord demandé
-     * @param {number} direction 
-     * @param {number|Array<number>} index 
-     * @returns {Segment|Array<Segment>}
+     * renvoie les segments sur le bord demandé
+     * @param {number[]} indexes liste des index des cellules
+     * @param {number} direction
+     * @returns {Array<Segment>}
      */
-    borderByIndex(direction, index) {
-        if (Array.isArray(index)) {
-            let that = this;
-            return _.map(index, function(i){ return that.borderByIndex(direction, i); });
+    get(indexes, direction) {
+        if (direction == DIRECTION.LEFT) {
+            return this.#getLeft(indexes);
+        } else if (direction == DIRECTION.RIGHT) {
+            return this.#getRight(indexes);
+        } else if (direction == DIRECTION.UP) {
+            return this.#getTop(indexes);
+        } else if (direction == DIRECTION.DOWN) {
+            return this.#getBottom(indexes);
+        } 
+        return _.union(
+            this.#getLeft(indexes),
+            this.#getRight(indexes),
+            this.#getTop(indexes),
+            this.#getBottom(indexes)
+        );
+    }
+
+
+    /**
+     * renvoie les segments des cellules sur le bord gauche
+     * @param {number[]} indexes liste des index des cellules
+     * @returns {Array<Segment>}
+     */
+    #getLeft(indexes) {
+        let out = [];
+        for (let i of indexes) {
+            let [line, col] = this.#lineCol(i);
+            let iCellNeighbour = line*this.#width + col - 1;
+            if ((col==0) || (indexes.indexOf(iCellNeighbour)<0)) {
+                out.push(this.#left(line, col));
+            }
         }
-        let line = Math.floor(index/this.#width);
-        let col = index - line*this.#width;
-        return this.border(direction, line, col);
+        return out;
+    }
+
+    /**
+     * renvoie les segments des cellules sur le bord droit
+     * @param {number[]} indexes liste des index des cellules
+     * @returns {Array<Segment>}
+     */
+    #getRight(indexes) {
+        let out = [];
+        for (let i of indexes) {
+            let [line, col] = this.#lineCol(i);
+            let iCellNeighbour = line*this.#width + col + 1;
+            if ((col==this.#width-1) || (indexes.indexOf(iCellNeighbour)<0)) {
+                out.push(this.#right(line, col));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * renvoie les segments des cellules sur le bord haut
+     * @param {number[]} indexes liste des index des cellules
+     * @returns {Array<Segment>}
+     */
+    #getTop(indexes) {
+        let out = [];
+        for (let i of indexes) {
+            let [line, col] = this.#lineCol(i);
+            let iCellNeighbour = (line-1)*this.#width + col;
+            if ((line==0) || (indexes.indexOf(iCellNeighbour)<0)) {
+                out.push(this.#up(line, col));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * renvoie les segments des cellules sur le bord haut
+     * @param {number[]} indexes liste des index des cellules
+     * @returns {Array<Segment>}
+     */
+    #getBottom(indexes) {
+        let out = [];
+        for (let i of indexes) {
+            let [line, col] = this.#lineCol(i);
+            let iCellNeighbour = (line+1)*this.#width + col;
+            if ((line==this.#height-1) || (indexes.indexOf(iCellNeighbour)<0)) {
+                out.push(this.#down(line, col));
+            }
+        }
+        return out;
     }
 
     /**
@@ -234,7 +302,7 @@ class Borders {
      * @param {number} col 
      * @returns {Segment}
      */
-    up(line, col) {
+    #up(line, col) {
         if ((line<0) || (line>=this.#height) || (col<0) || (col>=this.#width)) {
             throw new Error(`line:${line} col:${col} n'est pas dans la grille !`);
         }
@@ -247,7 +315,7 @@ class Borders {
      * @param {number} col 
      * @returns {Segment}
      */
-    down(line, col) {
+    #down(line, col) {
         if ((line<0) || (line>=this.#height) || (col<0) || (col>=this.#width)) {
             throw new Error(`line:${line} col:${col} n'est pas dans la grille !`);
         }
@@ -260,7 +328,7 @@ class Borders {
      * @param {number} col 
      * @returns {Segment}
      */
-    left(line, col) {
+    #left(line, col) {
         if ((line<0) || (line>=this.#height) || (col<0) || (col>=this.#width)) {
             throw new Error(`line:${line} col:${col} n'est pas dans la grille !`);
         }
@@ -273,7 +341,7 @@ class Borders {
      * @param {number} col 
      * @returns {Segment}
      */
-    right(line, col) {
+    #right(line, col) {
         if ((line<0) || (line>=this.#height) || (col<0) || (col>=this.#width)) {
             throw new Error(`line:${line} col:${col} n'est pas dans la grille !`);
         }
