@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from '../graphic/canvas';
+import { Events } from '../utils/events';
 
 const PICTOS = {
     "bell":      ["./img/bell.svg", -152, -172, .13],
@@ -39,20 +40,39 @@ class Button {
     #selected;
     /** @type {boolean} */
     #bistable = false;
-    /** @type {Function} */
-    #callBack = null;
+    /** @type {boolean} */
+    #pushOnly = false;
+    /** @type {Events} */
+    #eventsGest;
     /** @type {string} */
     #tag = "";
+    /** @type {string[]} */
+    #events;
+    /** @type {*} */
+    #data = null;
 
     /**
      * constructeur
      * @param {Canvas} parent
      * @param {number} line
      * @param {number} col
-     * @param {string} tag
+     * @param {Events} eventsGest
+     * @param {Object} params
      */
-    constructor(parent, line, col, tag) {
-        this.#tag = tag;
+    constructor(parent, line, col, eventsGest, params) {
+        for (let attr in params) {
+            if (["tag", "eventlistener", "event", "data", "picto", "caption", "bistable"].indexOf(attr)<0) {
+                throw new Error(`L'attribut ${attr} n'est pas reconu.`)
+            }
+        }
+        this.#tag = params.tag || "";
+        this.#data = params.data || null;
+        this.#events = [];
+        if (params.event) {
+            this.#events.push(params.event);
+        }
+        this.#eventsGest = eventsGest;
+
         this.#canvas = parent;
         this.#group = this.#canvas.group();
         let square = this.#canvas.square(line+.05, col+.05, .9, Button.RADIUS);
@@ -82,6 +102,34 @@ class Button {
         button.mouseup(function(e){
             self.mouseup(e);
         });
+
+        if (params.picto) {
+            this.#addPicto(params.picto);
+        }
+        if (params.caption) {
+            this.#drawText(params.caption);
+        }
+        if (params.bistable) {
+            this.setBistable();
+        }
+    }
+
+    /**
+     * ajoute un événement à déclencher au click
+     * @param {string} event
+     * @return {Button}
+     */
+    addEventTrigger(event) {
+        this.#events.push(event);
+        return this;
+    }
+
+    /**
+     * accesseur data
+     * @returns {*}
+     */
+    get data() {
+        return this.#data;
     }
 
     /**
@@ -125,13 +173,19 @@ class Button {
      * @param {Event} e 
      */
     mouseup(e){
-        if (this.bistable && !this.selected){
+        if (this.#pushOnly || (this.bistable && !this.selected)){
             this.setSelected(true);
         } else {
             this.setSelected(false);
         }
-        if (this.#callBack != null) {
-            this.#callBack(this, e);
+        let data = {
+            "selected": this.selected,
+            "tag":this.tag,
+            "data":this.#data,
+            "self":this
+        };
+        for (let event of this.#events) {
+            this.#eventsGest.triggerEvent(event, e, data);
         }
     }
 
@@ -157,18 +211,17 @@ class Button {
     /**
      * trace un carré de couleur sur le bouton
      * @param {string} text
-     * @param {string} color
      * @returns {Button}
      */
-    drawText(text, color = "#000000"){
+    #drawText(text){
         let t = this.#canvas.text(text, [this.#col + .5, this.#line + .5], 0.7).anchor("C");
-        t.stroke({'color':color}).fill('none');
+        t.stroke({'color':"#000000"}).fill('none');
         this.#group.add(t.group);
         t.group.backward();
         return this;
     }
 
-    addPicto(name) {
+    #addPicto(name) {
         if (typeof PICTOS[name] == 'undefined') {
             throw new Error(`Picto [${name}] inconnu !`);
         }
@@ -236,21 +289,22 @@ class Button {
     }
 
     /**
-     * assigne la fonction callBack
-     * @param {Function|null} callBack
-     * @returns {Button}
-     */
-    assignCallBack(callBack){
-        this.#callBack = callBack;
-        return this;
-    }
-
-    /**
      * rend le bouton bistable
      * @returns {Button}
      */
     setBistable() {
         this.#bistable = true;
+        this.#pushOnly = false;
+        return this;
+    }
+
+    /**
+     * met le bouton dans un mode où on ne peut que l'enclencher
+     * @returns {Button}
+     */
+    setPushOnly() {
+        this.#bistable = false;
+        this.#pushOnly = true;
         return this;
     }
 
