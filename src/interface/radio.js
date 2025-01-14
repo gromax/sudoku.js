@@ -1,4 +1,5 @@
 import { Button } from "./button";
+import { Events } from "../utils/events";
 
 class Radio {
     /** @type {Array<Button>} */
@@ -6,24 +7,32 @@ class Radio {
 
     /**
      * constructeur
+     * @param {string} name
      * @param {Array<Button>} buttons 
+     * @param {Events} eventsGest
      */
-    constructor(buttons) {
+    constructor(name, buttons, eventsGest) {
         this.#buttons = buttons;
         if (buttons.length == 0) {
             throw new Error('Liste de boutons vide dans Radio !');
         }
-        let f = function(buttonClicked, event) {
-            for (let b of buttons) {
-                if (b!=buttonClicked) {
+
+        eventsGest.addEvent(name+"RadioClick", function(e, data) {
+            if (!data){
+                throw new Error("data n'est pas défini !");
+            }
+            for (let b of buttons){
+                if (b!=data.self){
                     b.unselect();
                 }
             }
-        }
+        });
+        
         buttons[0].setSelected(true);
+        
         for (let b of buttons) {
-            b.setBistable();
-            b.assignCallBack(f);
+            b.setPushOnly();
+            b.addEventTrigger(name + "RadioClick");
         }
     }
 
