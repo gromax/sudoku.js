@@ -1,14 +1,13 @@
 /* Gère la création des la grille */
 import _ from 'lodash';
-import { DIRECTION } from '../constantes';
 import { SVG } from '@svgdotjs/svg.js';
-
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
-import { Selection } from './selection';
-import { GCell } from './cell';
-import { Borders } from './borders';
-import { History } from '../utils/history';
+import { Events } from '../utils/events';
+
+/**
+ * @typedef {Object.<string,Canvas>} Layers
+ */
 
 class Board {
     static SIZE = 1100;
@@ -24,50 +23,36 @@ class Board {
     #cellsize;  // taille d'une cellule carrée, en unités svg
     /** @type {Canvas} */
     #canvas;    // conteneur pour tous les dessins
-    /** @type {Canvas} */
-    #decorations;    // conteneur pour les dessins faits sur la grille
-    /** @type {Canvas} */
-    #subgridLayer; // canvas en dessous de la grille
-    /** @type {Selection} */
-    #selection // canvas pour dessiner la sélection
-    /** @type {Canvas} */
-    #backCellLayer // canvas pour dessiner la partie arrière des cellules
-    /** @type {Canvas} */
-    #frontCellLayer // canvas pour dessiner la partie avant sélection
-    /** @type {Array<GCell} */
-    #cells;
-    /** @type {Borders} */
-    #borders;
-    /** @type {History} */
-    #history;
+
+    /** @type {Layers} */
+    #layers;
 
     /**
      * constructure
      * @param {string} id identifiant dom du conteneur
      * @param {string} format chaîne indiquant le format de la grille
      * @param {string} commande ensemble de commandes des éléments à tracer
+     * @param {Events} eventsGest gestionnaire d'événements
      */
-    constructor(id, format, commande) {
+    constructor(id, format, commande, eventsGest) {
+        this.#layers = {};
         this.#content = SVG().addTo(id).size(Board.SIZE, Board.SIZE);
         this.#cellsize = Board.DEFAULTCELLSIZE;
         this.#content.rect(Board.SIZE, Board.SIZE).fill('#fff').stroke('none');
         this.#makeGrid(format.trim());
-        this.parse(commande.trim());
-        let self = this;
-        this.#content.click(function(e){self.click(e);});
+        this.#parse(commande.trim());
+        this.#content.click(function(e){eventsGest.triggerEvent("gridClick", e, null);});
     }
 
     /**
-     * gestion événement de click
-     * @param {Event} e 
+     * renvoie un calque
+     * @returns {Canvas}
      */
-    click(e) {
-        let altPressed = e.altKey;
-        let ctrlPressed = e.ctrlKey;
-        let shiftPressed = e.shiftKey;
-        let x = e.offsetX;
-        let y = e.offsetY;
-        this.#selection.select(x, y, shiftPressed);
+    layer(name) {
+        if (typeof this.#layers[name] == "undefined") {
+            throw new Error(`Le calque ${name} n'existe pas !`);
+        }
+        return this.#layers[name];
     }
 
     /**
@@ -91,30 +76,19 @@ class Board {
         this.#cellsize = Math.min(Board.SIZE/(this.#height+2), Board.SIZE/(this.#width+2));
         this.#canvas = new Canvas(this.#content, this.#cellsize);
         
-        this.#subgridLayer = this.#canvas.sublayer();
-        this.#backCellLayer = this.#canvas.sublayer();
+        this.#layers.subgrid = this.#canvas.sublayer();
+        this.#layers.backCell = this.#canvas.sublayer();
         this.#drawGrid(g.type);
-        this.#decorations = this.#canvas.sublayer();
-        this.#frontCellLayer = this.#canvas.sublayer();
-        this.#selection = new Selection(this.#canvas.sublayer(), this.#width, this.#height);
-        
-        this.#cells = [];
-        for (let line=0; line < this.#height; line++){
-            for (let col=0; col < this.#width; col++){
-                let c = new GCell(this.#backCellLayer, this.#frontCellLayer, line, col);
-                this.#cells.push(c);
-            }
-        }
-
-        this.#borders = new Borders(this.#frontCellLayer, this.#width, this.#height);
-        this.#history = new History(this.#width, this.#height);
+        this.#layers.decorations = this.#canvas.sublayer();
+        this.#layers.frontCell = this.#canvas.sublayer();
+        this.#layers.selection = this.#canvas.sublayer();
     }
 
     /**
      * exécute les commandes de dessin
      * @param {string} commandes chaine de forme com1;com2;...
      */
-    parse(commandes) {
+    #parse(commandes) {
         let coms = commandes.split(';');
         for (let com of coms) {
             if (this.#tryThermo(com)) {
@@ -156,8 +130,8 @@ class Board {
         }
         let coords = Coords.strToCoords(m.groups.chaine);
         let color = Canvas.color(m.groups.color || '_');
-        this.#decorations.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
-        this.#decorations.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
+        this.#layers.decorations.disc(coords[0].line, coords[0].col).fill(color).stroke('none');
+        this.#layers.decorations.line(coords).fill('none').stroke({width:this.#cellsize/4, color:color});
         return true;
     }
 
@@ -179,7 +153,7 @@ class Board {
         let w = (com[0]=='L') ? this.#cellsize/4 : this.#cellsize/8;
         let coords = Coords.strToCoords(m.groups.chaine);
         let color = Canvas.color(m.groups.color || '_');
-        this.#decorations.line(coords).fill('none').stroke({width:w, color:color});
+        this.#layers.decorations.line(coords).fill('none').stroke({width:w, color:color});
         return true;
     }
 
@@ -207,7 +181,7 @@ class Board {
         let color = Canvas.color(stringColor[0]);
         let backColor = (stringColor.length==2)?Canvas.color(stringColor[1]):'none';
         let margin = parseInt(m.groups.margin || '10')/100;
-        let polygons = this.#decorations.cadre(coords, margin);
+        let polygons = this.#layers.decorations.cadre(coords, margin);
         let strokeWidth = Board.GRIDSTROKE.width;
         if (m.groups.continu == '=') {
             strokeWidth = Board.GRIDTHICKSTROKE.width;
@@ -220,14 +194,14 @@ class Board {
             }
         }
         if (backColor != 'none') {
-            let backPolygons = this.#subgridLayer.cadre(coords, margin);
+            let backPolygons = this.layer("subgrid").cadre(coords, margin);
             for (let pol of backPolygons) {
                 pol.fill(backColor).stroke('none');
             }
         }
 
         if (m.groups.tag) {
-            let text = this.#decorations.text(m.groups.tag, coords[0], 0.3);
+            let text = this.layer("decorations").text(m.groups.tag, coords[0], 0.3);
             text.stroke(color).fill('#fff');
         }
         return true;
@@ -254,7 +228,7 @@ class Board {
         }
         let color = Canvas.color(m.groups.color || '_');
         let coord = Coords.paireToCoord(m.groups.pos);
-        let text = this.#decorations.text(m.groups.digit, coord, 0.8);
+        let text = this.layer("decorations").text(m.groups.digit, coord, 0.8);
         text.anchor('C');
         text.stroke(color);
         text.fill('none');
@@ -288,7 +262,7 @@ class Board {
         let size = parseInt(stringSize.substring(1))/100;
         let coord = Coords.paireToCoord(m.groups.pos);
         let angle = m.groups.angle || '0';
-        let text = this.#decorations.text(m.groups.tag, coord, size);
+        let text = this.layer("decorations").text(m.groups.tag, coord, size);
         text.stroke(color).fill(backColor);
         text.anchor(anchor);
         switch(angle) {
@@ -319,7 +293,7 @@ class Board {
         let margin = parseInt(m.groups.margin || '0')/100;
         let opacity = parseInt(m.groups.opacity || '100')/100;
         let coords = Coords.strToCoords(m.groups.chaine.toLowerCase());
-        let backPolygons = this.#subgridLayer.cadre(coords,margin);
+        let backPolygons = this.layer("subgrid").cadre(coords,margin);
         for (let pol of backPolygons) {
             pol.fill({color:color, opactiy:opacity}).stroke('none');
         }
@@ -340,171 +314,20 @@ class Board {
     }
     
     /**
-     * change l'état de la couleur donnée pour les cellules de la sélection
-     * @param {string} color
+     * accesseur width
+     * @returns {number}
      */
-    toggleSelColor(color) {
-        let indexes = this.#selection.get_selecteds_index();
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushCol(color, indexes);
-        if (indexes.length == 1) {
-            this.#cells[indexes[0]].toggleColor(color);
-            return;
-        }
-        let all_have = true;
-        for (let i of indexes) {
-            if (!this.#cells[i].hasColor(color)) {
-                all_have = false;
-                break;
-            }
-        }
-        for (let i of indexes) {
-            if (all_have) {
-                this.#cells[i].removeColor(color);
-            } else {
-                this.#cells[i].addColor(color);
-            }
-        }
+    get width() {
+        return this.#width;
     }
 
     /**
-     * supprime les couleurs de la sélection
+     * accesseur height
+     * @returns {number}
      */
-    clearColors() {
-        let indexes = this.#selection.get_selecteds_index();
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushClearCol(indexes);
-        for (let i of indexes) {
-            this.#cells[i].clearColors();
-        }
+    get height() {
+        return this.#height;
     }
-
-    /**
-     * change l'état de des segments dans la direction indiquée sur la sélection
-     * @param {string} color
-     * @param {number} direction
-     */
-    toggleBorderColor(color, direction) {
-        let indexes = this.#selection.getBorder(direction);
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushBorder(indexes, color, direction);
-        if (indexes.length == 1) {
-            let [line, col] = this.#selection.lineCol(indexes[0]);
-            this.#borders.border(direction, line, col).toggleColor(color);
-            return;
-        }
-        let segs = [];
-        for (let i of indexes) {
-            let [line, col] = this.#selection.lineCol(i);
-            let s = this.#borders.border(direction, line, col);
-            segs.push(s);
-        }
-        let all_have = _.every(segs, function(s){ return s.color == color});
-        for (let s of segs) {
-            if (all_have) {
-                s.hide();
-            } else {
-                s.setColor(color);
-            }
-        }
-    }
-
-    /**
-     * change l'état des bords extérieurs de la sélection
-     * @param {string} color 
-     */
-    toggleOuterBorderColor(color) {
-        let indexes = this.#selection.get_selecteds_index();
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushBorder(indexes, color, 'A');
-        let segs = _.union(
-            this.#borders.borderByIndex(DIRECTION.UP, this.#selection.getBorder(DIRECTION.UP)),
-            this.#borders.borderByIndex(DIRECTION.DOWN, this.#selection.getBorder(DIRECTION.DOWN)),
-            this.#borders.borderByIndex(DIRECTION.LEFT, this.#selection.getBorder(DIRECTION.LEFT)),
-            this.#borders.borderByIndex(DIRECTION.RIGHT, this.#selection.getBorder(DIRECTION.RIGHT))
-        );
-        if (_.every(segs, function(s){ return s.color == color})) {
-            for (let s of segs) {
-                s.hide();
-            }
-        } else {
-            for (let s of segs) {
-                s.setColor(color);
-            }
-        }
-    }
-
-    /**
-     * active le verrou sur la sélection
-     */
-    setSelectionVerrou() {
-        this.#selection.setVerrou();
-    }
-
-    /**
-     * désactive le verrou sur la sélection
-     */
-    resetSelectionVerrou() {
-        this.#selection.resetVerrou();
-    }
-
-    /**
-     * ajoute ou supprime un digit
-     * @param {number|string} digit
-     * @param {string} anchor
-     * @param {string} color
-     */
-    toggleDigit(digit, anchor, color) {
-        let indexes = this.#selection.get_selecteds_index();
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushDigit(indexes, digit, anchor, color);
-        let cells = this.#cells;
-        if (_.every(indexes, function(i){ return cells[i].hasDigit(digit, anchor); })) {
-            for (let i of indexes) {
-                this.#cells[i].removeDigit(digit, anchor);
-            }
-        } else {
-            for (let i of indexes) {
-                this.#cells[i].addDigit(digit, anchor, color);
-            }
-        }
-    }
-
-    /**
-     * supprime les candidats
-     * @param {string} anchor 
-     */
-    clearDigits(anchor) {
-        let indexes = this.#selection.get_selecteds_index();
-        if (indexes.length == 0) {
-            return;
-        }
-        this.#history.pushClearDigit(indexes, anchor);
-        let cells = this.#cells;
-        if (_.every(indexes, function(i){ return !cells[i].hasAnchor(anchor); })) {
-            for (let i of indexes) {
-                this.#cells[i].clearAllCandidats();
-            }
-        } else {
-            for (let i of indexes) {
-                this.#cells[i].clearCandidats(anchor);
-            }
-        }
-    }
-
-
-
-
 }
 
 export { Board };
