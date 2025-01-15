@@ -23,7 +23,7 @@ class Game {
         let eventsGest = new Events();
         let board = new Board(idBoard, format, commandes, eventsGest);
         let selection = new Selection(board.layer("selection"), board.width, board.height, eventsGest);
-        let history = new History(board.width, board.height);
+        let history = new History(board.width, board.height, eventsGest);
         new Pad(idPad, eventsGest);
   
         this.#cells = new Cells(board.layer("frontCell"), board.layer("backCell"), board.width, board.height);
@@ -73,6 +73,22 @@ class Game {
             self.border(indexes, data.color, direction);
         });
 
+        eventsGest.addEvent("back", function(e, data) {
+            self.clear();
+            if ((data == null) || (typeof data.actions == 'undefined')) {
+                return;
+            }
+            for (let action of data.actions) {
+                self.execAction(action);
+            }
+        });
+
+        eventsGest.addEvent("forward", function(e,data) {
+            if ((data == null) || (typeof data.action == 'undefined')) {
+                return;
+            }
+            self.execAction(data.action);
+        })
     }
 
     /**
@@ -178,6 +194,31 @@ class Game {
             _.forEach(cells, function(c){ c.clearAllCandidats(); });
         } else {
             _.forEach(cells, function(c){ c.clearCandidats(anchor); });
+        }
+    }
+
+    /**
+     * met à zéro cellules et bords
+     */
+    clear() {
+        this.#cells.clear();
+        this.#borders.clear();
+    }
+
+    /**
+     * exécute une entrée d'historique
+     * @param {Object} action 
+     */
+    execAction(action) {
+        if (["color", "digit", "border"].indexOf(action.type) <0){
+            throw new Error(`Le type d'action ${action.type} est inconnu.`);
+        };
+        if (action.type == "color") {
+            this.paint(action.indexes, action.color);
+        } else if (action.type == "digit") {
+            this.digit(action.indexes, action.digit, action.anchor, action.color);
+        } else {
+            this.border(action.indexes, action.color, action.direction);
         }
     }
 
