@@ -107,11 +107,13 @@ class Pad {
         });
 
         new Button(this.#canvas, 0, 5, eventsGest, {
-            "picto":"undo"
+            "picto":"undo",
+            "event":"backClick"
         });
 
         new Button(this.#canvas, 0, 6, eventsGest, {
-            "picto":"redo"
+            "picto":"redo",
+            "event":"forwardClick"
         });
 
         for (let i=0; i<3; i++) {
