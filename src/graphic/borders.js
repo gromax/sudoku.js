@@ -347,6 +347,18 @@ class Borders {
         }
         return this.#verticals[line*(this.#width+1) + col+1];
     }
+
+    /**
+     * efface tous les segments
+     */
+    clear() {
+        for (let s of this.#horizontals) {
+            s.hide();
+        }
+        for (let s of this.#verticals) {
+            s.hide();
+        }
+    }
 }
 
 
