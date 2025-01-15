@@ -37,6 +37,16 @@ class Cells {
         return this.#cells[i];
     }
 
+    /**
+     * remet les cellules à zéro
+     */
+    clear() {
+        for (let c of this.#cells) {
+            c.clearAllCandidats();
+            c.clearColors();
+        }
+    }
+
 
 
 }
