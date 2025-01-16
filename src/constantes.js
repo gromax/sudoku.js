@@ -19,6 +19,7 @@ const ANCRES = {
     "SW": {x:0,   y:1,   clockwise:"NW", counterclockwise:"SE", code:3},
     "W" : {x:0,   y:0.5, clockwise:"N",  counterclockwise:"S",  code:2},
     "C" : {x:0.5, y:0.5, clockwise:"C",  counterclockwise:"C",  code:5},
+    "P" : {x:0.5, y:0.5, clockwise:"P",  counterclockwise:"P",  code:0},
 }
 
 const COLORS = [
