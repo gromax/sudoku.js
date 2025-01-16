@@ -1,6 +1,7 @@
-import { stringToInts, intsToString, ALPHABETSIZE } from './misc';
-import { COLORS, ANCRES } from "../constantes"
+import { COLORS, DIRECTION } from "../constantes"
 import { Events } from './events';
+import { SelectionCoder } from './selectioncoder';
+import {Action, ActionBorder, ActionColor, ActionDigit} from './action';
 
 const SYMBOLS = {
     "color": "_",
@@ -11,10 +12,8 @@ const SYMBOLS = {
 
 class History {
     /** @type {number} */
-    #width;
-    /** @type {number} */
-    #height;
-    /** @type {Array<Object>} */
+    #size;
+    /** @type {Array<Action>} */
     #liste;
     /** @type {number} */
     #cursor;
@@ -28,8 +27,7 @@ class History {
      */
     constructor(width, height, eventsGest){
         this.#liste = [];
-        this.#width = width;
-        this.#height = height;
+        this.#size = height*width;
         this.#cursor = 0;
         this.#eventsGest = eventsGest;
 
@@ -44,114 +42,97 @@ class History {
             self.load(e);
         });
     }
-    /**
-     * code une action
-     * chaque fois, une sélection est utile et est codée par une succession de a-zA-Z;:
-     * un effacement de couleur est codée "_!<selection>"
-     * un choix de couleur est codé "_1<selection>" ou 1 est un exemple de code couleur
-     * un choix de bord est codé "|23<selection>" 2 est le code direction, 2 le code couleur
-     * un choix de digit est codé "236<selection>" 2 étant le digit, 3 l'ancre et 6 la couleur
-     * un effacement de digits est codé "3<selection>" 3 étant l'ancre
-     * @param {*} action 
-     */
-    code(action){
-        let path = this.#selectionCode(action.indexes);
-        if (action.type == "border") {
-            let icol = COLORS.indexOf(action.color);
-            let dir = action.direction>=0? action.directon : "";
-            return "|"+dir+icol+path;
+
+
+    decode(actionCode){
+        if (actionCode.lengh==0){
+            return null;
         }
-        if (action.type == "color") {
-            let icol = action.color == "" ? "!" : COLORS.indexOf(action.color);
-            return "_"+icol+path;
+        if (actionCode.charAt(0) == "|") {
+            if (actionCode.lengh<3){
+                return null;
+            }
+            let color = this.#getColor(actionCode.charAt(1));
+            if (color=="") {
+                return null;
+            }
+            let iDir = this.#getDirection(actionCode.charAt(2));
+            let selection = iDir<0 ? new SelectionCoder(actionCode.substring(2), this.#size):new SelectionCoder(actionCode.substring(3), this.#size);
+            return { type:"border", indexes:selection, direction:iDir, color:color };
         }
-        let iDir = ANCRES[action.anchor].code;
-        let icol = action.color == "" ? "!" : COLORS.indexOf(action.color);
-        return ""+action.digit+iDir+icol+path;
+        if (action.charAt(0) == "_") {
+            return null;
+        }
+        return null;
     }
+
+    /** renvoie la couleur correspondant à un caractère représentant un indice de couleur
+     * renvoie "" en cas de problème
+     * @param {string} strCol
+     * @returns {string}
+     */
+    #getColor(strCol){
+        let iCol = parseInt(strCol);
+        if ((strCol.length==0)||(strCol.length>1)){
+            throw new Error(`${strCol} : invalide, il faut un caractère.`);
+        }
+        if (isNaN(iCol)) {
+            return "";
+        }
+        if (iCol>= COLORS.length){
+            return "";
+        }
+        return COLORS[iCol];
+    }
+
+    /**
+     * renvoie le code de direction correspondant à un caractère codant cette direction
+     * en cas de défaut, renvoie -1
+     * @param {string} strDir
+     * @returns {number}
+     */
+    #getDirection(strDir){
+        if ((strDir.length==0)||(strDir.length>1)){
+            throw new Error(`${strDir} : invalide, il faut un caractère.`);
+        }
+        let iDir = parseInt(strDir);
+        if (isNaN(iDir)) {
+            return -1;
+        }
+        for (let key in DIRECTION) {
+            if (DIRECTION[key]==iDir){
+                return iDir
+            }
+        }
+        return -1;
+    }
+
 
     /**
      * code l'ensemble de l'historique
      * @returns {string}
      */
-    codeAll(){
-        let self = this;
-        return _.map(this.#liste.slice(0,this.#cursor), function(item){return self.code(item)}).join("");
+    get code(){
+        return _.map(this.#liste.slice(0,this.#cursor), function(item){return item.code}).join(",");
     }
 
     /**
-     * renvoie une chaîne de caractère représentant les indices sélectionnés
-     * @param {number[]} selection indices sélectionnés
-     * @returns {string}
+     * décode un historique codé
+     * @param {string} code
+     * @returns {Object[]}
      */
-    #selectionCode(selection){
-        if (selection.length == 0) {
-            throw Error("selection est vide !");
+    decodeAll(code){
+        let actionCodes = code.split(',');
+        let actions = [];
+        for (let actionCode of actionCodes){
+            let action = this.decode(actionCode);
+            if (action == null) {
+                console.log(`${actionCode} non reconnu`);
+                return null;
+            }
+            actions.push(action);
         }
-        // selection converti en un indice initial puis indices relatifs
-        let deplacements = [selection[0]];
-        for (let i=1; i<selection.length; i++){
-            deplacements.push(selection[i] - selection[i-1]);
-        }
-        // premier cas, brut.
-        let size = this.#height*this.#width;
-        let code1 = intsToString(this.#convBase(size, ALPHABETSIZE, deplacements));
-        // 2e cas, en mettant à part le premier indice
-        let depart = selection[0];
-        let code2 = intsToString(this.#convBase(size, ALPHABETSIZE, [depart])) + ":" + intsToString(this.#convBase(size - depart - 1, ALPHABETSIZE, deplacements.slice(1)));
-        // 3e cas, en utilisant l'élément max
-        let m = Math.max(...deplacements);
-        let code3 = intsToString(this.#convBase(size, ALPHABETSIZE, [m])) + ";" + intsToString(this.#convBase(m+1, ALPHABETSIZE, deplacements));
-        if ((code1.length <= code2.length) && (code1.length<= code3.length)) {
-            return code1;
-        }
-        if (code2.length <= code3.length) {
-            return code2;
-        }
-        return code3;
-    }
-
-    /**
-     * Décode le code proposé en une suite d'indice
-     * @param {string} code 
-     * @returns {number[]}
-     */
-    #selectionDecode(code) {
-        let i = code.indexOf(":");
-        let j = code.indexOf(";");
-        let size = this.#height*this.#width;
-        let deplacements;
-        if (i>=0) {
-            let depart = this.#convBase(ALPHABETSIZE, size, stringToInts(code.substring(0,i)))[0];
-            let deltas = this.#convBase(ALPHABETSIZE, size-depart-1, stringToInts(code.substring(i+1)));
-            deplacements = [depart].concat(deltas);
-        } else if (j>=0) {
-            let b = this.#convBase(ALPHABETSIZE, size, stringToInts(code.substring(0,j)))[0] + 1;
-            deplacements = this.#convBase(ALPHABETSIZE, b, stringToInts(code.substring(j+1)));
-        } else {
-            deplacements = this.#convBase(ALPHABETSIZE, size, stringToInts(code));
-        }
-        let out = [deplacements[0]];
-        for (let k=1; k<deplacements.length; k++) {
-            out.push(out[k-1]+deplacements[k]);
-        }
-        return out;
-    }
-
-
-    
-    /**
-     * renvoie [line,col] correspondant à un index
-     * @param {number} index
-     * @returns {[number,number]}
-     */
-    #lineCol(index) {
-        if ((index <0) || (index >= this.#height*this.#width)) {
-            throw new Error(`indice:${index} invalide !`);
-        }
-        let line = Math.floor(index/this.#width);
-        let col = index - this.#width*line;
-        return [line, col];
+        return actions;
     }
 
     /**
@@ -168,7 +149,8 @@ class History {
      */
     pushCol(indexes, color) {
         this.#purge();
-        this.#liste.push({type:"color", indexes:indexes, color:color});
+        let action = new ActionColor(color, [this.#size, indexes]);
+        this.#liste.push(action);
         this.#cursor++;
         this.#changeHistoryText();
     }
@@ -181,7 +163,8 @@ class History {
      */
     pushBorder(indexes, color, direction) {
         this.#purge();
-        this.#liste.push({type:"border", indexes:indexes, color:color, direction:direction});
+        let action = new ActionBorder(color, direction, [this.#size, indexes]);
+        this.#liste.push(action);
         this.#cursor++;
         this.#changeHistoryText();
     }
@@ -195,7 +178,8 @@ class History {
      */
     pushDigit(indexes, digit, anchor, color) {
         this.#purge();
-        this.#liste.push({type:"digit", indexes:indexes, digit:digit, anchor:anchor, color:color});
+        let action = new ActionDigit(digit, anchor, color, [this.#size, indexes]);
+        this.#liste.push(action);
         this.#cursor++;
         this.#changeHistoryText();
     }
@@ -234,61 +218,22 @@ class History {
      */
     load(e) {
         let histoText = document.getElementById('history').value;
-        console.log(histoText);
+        let actions = this.decodeAll(histoText);
+        if (actions == null) {
+            console.log("Échec !");
+        }
+        this.#liste = actions;
+        console.log(actions);
+        this.#cursor = 0;
+        this.#eventsGest.triggerEvent("back", e, {actions:[]});
     }
 
-    /**
-     * renvoie un code pour chaque cellule sélectionnée
-     * @param {Array<number>}
-     * @returns {string}
-     */
-    #indexesToCode(indexes) {
-        let result = '';
-        for (let i of indexes) {
-            let [line, col] = this.#lineCol(i);
-            result += intToLetter(line) + intToLetter(col);
-        }
-        return result;
-    }
 
-    /**
-     * convertit un mot d'une base à une autre
-     * @param {number} baseSource 
-     * @param {number} baseCible 
-     * @param {number[]} digits 
-     * @returns {number[]}
-     */
-    #convBase(baseSource, baseCible, digits){
-        let out = [];
-        while (_.sum(digits) > 0) {
-            let [r, q] = this.#euclidian(baseSource, baseCible, digits);
-            out.push(r);
-            digits = q;
-        }
-        return out;
-    }
 
-    /**
-     * fait la division euclidienne de digits/baseCible
-     * @param {number} baseSource 
-     * @param {number} baseCible 
-     * @param {number[]} digits nombre exprimé en baseSource, poids faible = digits[0]
-     * @returns {[number, number[]]} [reste, quotient]
-     */
-    #euclidian(baseSource, baseCible, digits) {
-        let out = [];
-        let r = 0;
-        for (let i=digits.length - 1; i>=0; i--) {
-            let d = digits[i] + r*baseSource;
-            let q = Math.floor(d/baseCible);
-            r = d % baseCible;
-            out.push(q);
-        }
-        return [r, out.reverse()];
-    }
+
 
     #changeHistoryText() {
-        document.getElementById("history").value = this.codeAll();
+        document.getElementById("history").value = this.code;
     }
 
 
