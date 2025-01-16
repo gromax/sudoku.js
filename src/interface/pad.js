@@ -106,6 +106,11 @@ class Pad {
             });
         });
 
+        new Button(this.#canvas, 0, 3, eventsGest, {
+            "event":"load",
+            "picto":"file"
+        });
+
         new Button(this.#canvas, 0, 5, eventsGest, {
             "picto":"undo",
             "event":"backClick"
