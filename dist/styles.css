@@ -74,3 +74,7 @@ svg text{
     -ms-user-select: none;
     user-select: none;
  }
+
+ textarea {
+    width:100%;
+ }
