@@ -5,6 +5,7 @@ import { Cells } from "./cells";
 import { Borders } from '../graphic/borders';
 import { Events } from "../utils/events";
 import { Pad } from "../interface/pad";
+import { Action, ActionColor, ActionDigit } from "../utils/action";
 
 class Game {
     /** @type {Cells} */
@@ -207,18 +208,16 @@ class Game {
 
     /**
      * exécute une entrée d'historique
-     * @param {Object} action 
+     * @param {Action} action 
      */
     execAction(action) {
-        if (["color", "digit", "border"].indexOf(action.type) <0){
-            throw new Error(`Le type d'action ${action.type} est inconnu.`);
-        };
-        if (action.type == "color") {
-            this.paint(action.indexes, action.color);
-        } else if (action.type == "digit") {
-            this.digit(action.indexes, action.digit, action.anchor, action.color);
+        let indexes = action.indexes;
+        if (action instanceof ActionColor) {
+            this.paint(indexes, action.color);
+        } else if (action instanceof ActionDigit) {
+            this.digit(indexes, action.digit, action.anchor, action.color);
         } else {
-            this.border(action.indexes, action.color, action.direction);
+            this.border(indexes, action.color, action.direction);
         }
     }
 
