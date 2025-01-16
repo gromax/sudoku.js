@@ -17,6 +17,7 @@ const PICTOS = {
     "outer":     ["./img/outer_border.svg", 29, 29, 2.5],
     "undo":      ["./img/undo.svg", 29, 29, 2.5],
     "redo":      ["./img/redo.svg", 29, 29, 2.5],
+    "file":      ["./img/file.svg", 29, 29, 2.5],
 };
 
 
