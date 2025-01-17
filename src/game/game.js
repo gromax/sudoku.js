@@ -1,11 +1,12 @@
 import { Board } from "../graphic/board";
 import { History } from "../utils/history";
-import { Selection } from '../graphic/selection';
+import { GSelection } from '../graphic/gselection';
 import { Cells } from "./cells";
 import { Borders } from '../graphic/borders';
 import { Events } from "../utils/events";
 import { Pad } from "../interface/pad";
 import { Action, ActionColor, ActionDigit } from "../utils/action";
+import { Selection } from "../utils/selection";
 
 class Game {
     /** @type {Cells} */
@@ -23,7 +24,7 @@ class Game {
     constructor(idBoard, idPad, format, commandes) {
         let eventsGest = new Events();
         let board = new Board(idBoard, format, commandes, eventsGest);
-        let selection = new Selection(board.layer("selection"), board.width, board.height, eventsGest);
+        let gSelection = new GSelection(board.layer("selection"), board.width, board.height, eventsGest);
         let history = new History(board.width, board.height, eventsGest);
         new Pad(idPad, eventsGest);
   
@@ -35,8 +36,8 @@ class Game {
             if (data == null) {
                 throw new Error("data est indéfini.");
             }
-            let indexes = selection.get_selecteds_index();
-            if (indexes.length == 0) {
+            let selection = gSelection.selection;
+            if (selection.length == 0) {
                 return;
             }
             if (typeof data.anchor =="undefined") {
@@ -44,34 +45,34 @@ class Game {
             }
             let color = data.color || "";
             let digit = data.digit || "";
-            history.pushDigit(indexes, digit, data.anchor, color);
-            self.digit(indexes, digit, data.anchor, color);
+            history.pushDigit(selection, digit, data.anchor, color);
+            self.digit(selection, digit, data.anchor, color);
         });
 
         eventsGest.addEvent("paint", function(e,data){
-            let indexes = selection.get_selecteds_index();
-            if (indexes.length == 0) {
+            let selection = gSelection.selection;
+            if (selection.length == 0) {
                 return;
             }
             let color = data != null ? (data.color||"") : "";
-            history.pushCol(indexes, color);
-            self.paint(indexes, color);
+            history.pushCol(selection, color);
+            self.paint(selection, color);
         });
 
         eventsGest.addEvent("border", function(e,data){
             if (data == null) {
                 throw new Error("data est indéfini.");
             }
-            let indexes = selection.get_selecteds_index();
-            if (indexes.length == 0) {
+            let selection = gSelection.selection;
+            if (selection.length == 0) {
                 return;
             }
             let direction = data.direction || -1;
             if (typeof data.color =="undefined") {
                 throw new Error("data.color est indéfini.");
             }
-            history.pushBorder(indexes, data.color, direction);
-            self.border(indexes, data.color, direction);
+            history.pushBorder(selection, data.color, direction);
+            self.border(selection, data.color, direction);
         });
 
         eventsGest.addEvent("back", function(e, data) {
@@ -94,49 +95,49 @@ class Game {
 
     /**
      * assigne un digit. Si digit vide, l'efface 
-     * @param {number[]} indexes 
+     * @param {Selection} selection
      * @param {string} digit 
      * @param {string} anchor 
      * @param {string} color 
      */
-    digit(indexes, digit, anchor, color) {
+    digit(selection, digit, anchor, color) {
         if (digit == "") {
-            this.#clearDigits(indexes, anchor);
+            this.#clearDigits(selection, anchor);
         } else {
-            this.#toggleDigit(indexes, digit, anchor, color);
+            this.#toggleDigit(selection, digit, anchor, color);
         }
     }
 
     /**
      * assigne une couleur. Si color vide, efface
-     * @param {number[]} indexes 
+     * @param {Selection} selection 
      * @param {string} color 
      */
-    paint(indexes, color) {
+    paint(selection, color) {
         if (color == "") {
-            this.#clearColors(indexes);
+            this.#clearColors(selection);
         } else {
-            this.#toggleSelColor(indexes, color);
+            this.#toggleSelColor(selection, color);
         }
     }
 
     /**
      * assigne un bord. Si direction pas dans DIRECTIONS, les 4 bords
-     * @param {number[]} indexes 
+     * @param {Selection} selection 
      * @param {string} color 
      * @param {number} direction 
      */
-    border(indexes, color, direction) {
-        this.#toggleBorderColor(indexes, color, direction);
+    border(selection, color, direction) {
+        this.#toggleBorderColor(selection, color, direction);
     }
 
     /**
      * change l'état de la couleur donnée pour les cellules de la sélection
-     * @param {number[]} indexes
+     * @param {Selection} selection
      * @param {string} color
      */
-    #toggleSelColor(indexes, color) {
-        let cells = this.#cells.get(indexes);
+    #toggleSelColor(selection, color) {
+        let cells = this.#cells.get(selection.indexes);
         if (_.every(cells, function(c){ return c.hasColor(color); })) {
             _.forEach(cells, function(c){ c.removeColor(color); });
         } else {
@@ -146,21 +147,21 @@ class Game {
 
     /**
      * supprime les couleurs de la sélection
-     * @param {number[]} indexes
+     * @param {Selection} selection
      */
-    #clearColors(indexes) {
-        let cells = this.#cells.get(indexes);
+    #clearColors(selection) {
+        let cells = this.#cells.get(selection.indexes);
         _.forEach(cells, function(c){ c.clearColors(); });
     }
 
     /**
      * change l'état de des segments dans la direction indiquée sur la sélection
-     * @param {number[]} indexes
+     * @param {Selection} selection
      * @param {string} color
      * @param {number} direction
      */
-    #toggleBorderColor(indexes, color, direction) {
-        let segs = this.#borders.get(indexes, direction);
+    #toggleBorderColor(selection, color, direction) {
+        let segs = this.#borders.get(selection.indexes, direction);
         if (_.every(segs, function(s){ return s.color == color})) {
             _.forEach(segs, function(s){ s.hide(); });
         } else {
@@ -170,13 +171,13 @@ class Game {
 
     /**
      * ajoute ou supprime un digit
-     * @param {number[]} indexes
+     * @param {Selection} selection
      * @param {number|string} digit
      * @param {string} anchor
      * @param {string} color
      */
-    #toggleDigit(indexes, digit, anchor, color) {
-        let cells = this.#cells.get(indexes);
+    #toggleDigit(selection, digit, anchor, color) {
+        let cells = this.#cells.get(selection.indexes);
         if (_.every(cells, function(c){ return c.hasDigit(digit, anchor); })) {
             _.forEach(cells, function(c){ c.removeDigit(digit, anchor); });
         } else {
@@ -186,11 +187,11 @@ class Game {
 
     /**
      * supprime les candidats
-     * @param {number[]} indexes
+     * @param {Selection} selection
      * @param {string} anchor 
      */
-    #clearDigits(indexes, anchor) {
-        let cells = this.#cells.get(indexes);
+    #clearDigits(selection, anchor) {
+        let cells = this.#cells.get(selection.indexes);
         if (_.every(cells, function(c){ return !c.hasAnchor(anchor); })) {
             _.forEach(cells, function(c){ c.clearAllCandidats(); });
         } else {
@@ -211,13 +212,12 @@ class Game {
      * @param {Action} action 
      */
     execAction(action) {
-        let indexes = action.indexes;
         if (action instanceof ActionColor) {
-            this.paint(indexes, action.color);
+            this.paint(action.selection, action.color);
         } else if (action instanceof ActionDigit) {
-            this.digit(indexes, action.digit, action.anchor, action.color);
+            this.digit(action.selection, action.digit, action.anchor, action.color);
         } else {
-            this.border(indexes, action.color, action.direction);
+            this.border(action.selection, action.color, action.direction);
         }
     }
 
