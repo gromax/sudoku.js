@@ -1,6 +1,6 @@
 import { COLORS, DIRECTION } from "../constantes"
 import { Events } from './events';
-import { SelectionCoder } from './selectioncoder';
+import { Selection } from './selection';
 import {Action, ActionBorder, ActionColor, ActionDigit} from './action';
 
 const SYMBOLS = {
@@ -43,71 +43,6 @@ class History {
         });
     }
 
-
-    decode(actionCode){
-        if (actionCode.lengh==0){
-            return null;
-        }
-        if (actionCode.charAt(0) == "|") {
-            if (actionCode.lengh<3){
-                return null;
-            }
-            let color = this.#getColor(actionCode.charAt(1));
-            if (color=="") {
-                return null;
-            }
-            let iDir = this.#getDirection(actionCode.charAt(2));
-            let selection = iDir<0 ? new SelectionCoder(actionCode.substring(2), this.#size):new SelectionCoder(actionCode.substring(3), this.#size);
-            return { type:"border", indexes:selection, direction:iDir, color:color };
-        }
-        if (action.charAt(0) == "_") {
-            return null;
-        }
-        return null;
-    }
-
-    /** renvoie la couleur correspondant à un caractère représentant un indice de couleur
-     * renvoie "" en cas de problème
-     * @param {string} strCol
-     * @returns {string}
-     */
-    #getColor(strCol){
-        let iCol = parseInt(strCol);
-        if ((strCol.length==0)||(strCol.length>1)){
-            throw new Error(`${strCol} : invalide, il faut un caractère.`);
-        }
-        if (isNaN(iCol)) {
-            return "";
-        }
-        if (iCol>= COLORS.length){
-            return "";
-        }
-        return COLORS[iCol];
-    }
-
-    /**
-     * renvoie le code de direction correspondant à un caractère codant cette direction
-     * en cas de défaut, renvoie -1
-     * @param {string} strDir
-     * @returns {number}
-     */
-    #getDirection(strDir){
-        if ((strDir.length==0)||(strDir.length>1)){
-            throw new Error(`${strDir} : invalide, il faut un caractère.`);
-        }
-        let iDir = parseInt(strDir);
-        if (isNaN(iDir)) {
-            return -1;
-        }
-        for (let key in DIRECTION) {
-            if (DIRECTION[key]==iDir){
-                return iDir
-            }
-        }
-        return -1;
-    }
-
-
     /**
      * code l'ensemble de l'historique
      * @returns {string}
@@ -119,13 +54,13 @@ class History {
     /**
      * décode un historique codé
      * @param {string} code
-     * @returns {Object[]}
+     * @returns {Action[]}
      */
     decodeAll(code){
         let actionCodes = code.split(',');
         let actions = [];
         for (let actionCode of actionCodes){
-            let action = this.decode(actionCode);
+            let action = Action.decode(actionCode,this.#size);
             if (action == null) {
                 console.log(`${actionCode} non reconnu`);
                 return null;
@@ -157,13 +92,13 @@ class History {
 
     /**
      * ajoute un changement de bord à l'historique
-     * @param {number[]} indexes 
+     * @param {Selection} selection
      * @param {string} color 
      * @param {number|string} direction 
      */
-    pushBorder(indexes, color, direction) {
+    pushBorder(selection, color, direction) {
         this.#purge();
-        let action = new ActionBorder(color, direction, [this.#size, indexes]);
+        let action = new ActionBorder(color, direction, selection);
         this.#liste.push(action);
         this.#cursor++;
         this.#changeHistoryText();
@@ -171,14 +106,14 @@ class History {
 
     /**
      * ajoute un changement de digit à l'historique
-     * @param {number[]} indexes 
+     * @param {Selection} selection 
      * @param {number|string} digit 
      * @param {string} anchor 
      * @param {string} color 
      */
-    pushDigit(indexes, digit, anchor, color) {
+    pushDigit(selection, digit, anchor, color) {
         this.#purge();
-        let action = new ActionDigit(digit, anchor, color, [this.#size, indexes]);
+        let action = new ActionDigit(digit, anchor, color, selection);
         this.#liste.push(action);
         this.#cursor++;
         this.#changeHistoryText();
@@ -228,17 +163,9 @@ class History {
         this.#eventsGest.triggerEvent("back", e, {actions:[]});
     }
 
-
-
-
-
     #changeHistoryText() {
         document.getElementById("history").value = this.code;
     }
-
-
-
-
 }
 
 export { History }
