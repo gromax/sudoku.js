@@ -119,7 +119,7 @@ class GSelection {
         if (coords.length!=0) {
             let polys = this.#canvas.cadre(coords, 0);
             for (let poly of polys){
-                poly.stroke(Selection.STROKE).fill(Selection.FILL);
+                poly.stroke(GSelection.STROKE).fill(GSelection.FILL);
             }
         }
     }
