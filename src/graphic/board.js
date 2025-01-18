@@ -31,16 +31,16 @@ class Board {
      * constructure
      * @param {string} id identifiant dom du conteneur
      * @param {string} format chaîne indiquant le format de la grille
-     * @param {string} commande ensemble de commandes des éléments à tracer
+     * @param {string} commandes ensemble de commandes des éléments à tracer
      * @param {Events} eventsGest gestionnaire d'événements
      */
-    constructor(id, format, commande, eventsGest) {
+    constructor(id, format, commandes, eventsGest) {
         this.#layers = {};
         this.#content = SVG().addTo(id).size(Board.SIZE, Board.SIZE);
         this.#cellsize = Board.DEFAULTCELLSIZE;
         this.#content.rect(Board.SIZE, Board.SIZE).fill('#fff').stroke('none');
         this.#makeGrid(format.trim());
-        this.#parse(commande.trim());
+        this.#parse(commandes.trim());
         this.#content.click(function(e){eventsGest.triggerEvent("gridClick", e, null);});
     }
 
