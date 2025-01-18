@@ -18,6 +18,9 @@ const PICTOS = {
     "undo":      ["./img/undo.svg", 29, 29, 2.5],
     "redo":      ["./img/redo.svg", 29, 29, 2.5],
     "file":      ["./img/file.svg", 29, 29, 2.5],
+    "upload":    ["./img/upload.svg", 29, 29, 2.5],
+    "download":  ["./img/download.svg", 29, 29, 2.5],
+    "bulle":     ["./img/bulle.svg", 1770, 740, 0.4],
 };
 
 
