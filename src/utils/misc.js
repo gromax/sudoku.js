@@ -1,68 +1,70 @@
-import _ from 'lodash';
-
-const ALPHABETSIZE = 52;
+// Function to download data to a file
 
 /**
- * code un entier en une lettre
- * A = 0; Z = 25; a = 26 ; z = 51
- * @param {number} i 
- * @returns {string}
+ * Télécharge un contenu
+ * @param {string} data 
+ * @param {string} filename 
  */
-function intToLetter(i) {
-    if ((i>=52) || (i<0)) {
-        throw new Error(`${i} : ne convient pas, il faut un entier entre 0 et 51 compris.`);
+function download(data, filename) {
+    var file = new Blob([data], {type: 'text/plain'});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
     }
-    if (i<26) {
-        return  String.fromCharCode(65 + i);
-    }
-    String.fromCharCode(97 - 26 + i)
 }
 
 /**
- * renvoie l'entier correspondant à une lettre codée
- * A = 0; Z = 25; a = 26 ; z = 51
- * @param {string} letter 
- * @returns {number}
+ * Ouvre un popup de sélection de fichier
+ * upload le contenu du fichier et l'envoie à callback au format
+ * {success:true/false, content:"..." }
+ * @param {Function} callback 
  */
-function letterToInt(letter) {
-    let i = letter.charCodeAt(0) - 65;
-    if (i<0) {
-        throw new Error(`${letter} : ne convient pas, il faut un symbole alphabétique.`);
-    }
-    if (i<26) {
-        return i;
-    }
-    i -= 32;
-    if (i<26) {
-        return i + 26;
-    }
-    throw new Error(`${letter} : ne convient pas, il faut un symbole alphabétique.`);
+function upload(callback){
+    let inp = document.createElement("input");
+    inp.type = 'file';
+    inp.accept = '.txt';
+    document.body.appendChild(inp);
+    inp.addEventListener("change", function(e){ uploadCallback(e, callback)});
+    inp.click();
+    setTimeout(function() {
+        document.body.removeChild(inp);
+    }, 0); 
 }
 
 /**
- * convertit une suite d'entiers en une chaîne de caractères
- * @param {number[]} liste 
- * @returns {string}
+ * fonction annexe de upload
+ * callback du click sur le <input type="file" accept=".txt"/> généré par upload
+ * @param {Event} e
+ * @param {Function} callback
  */
-function intsToString(liste){
-    return _.map(liste, intToLetter).join("");
-}
+function uploadCallback(e, callback, inp) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const content = e.target.result;
+            callback({success:true, content:content});
+        };
 
-/**
- * convertit une chaîne de caractères en suite d'entiers
- * @param {string} message 
- * @returns {number[]}
- */
-function stringToInts(message) {
-    let n = (message.length);
-    let out = [];
-    for (let i=0; i<n; i++) {
-        let car = message.charAt(i);
-        let e = letterToInt(car);
-        out.push(e);
+        // Gestion des erreurs éventuelles
+        reader.onerror = function(e) {
+            callback({success:false, content:`Erreur lors de la lecture du fichier : ${e.target.error}`})
+        };
+
+        reader.readAsText(file);
+    } else {
+        callback({success:false, content:"Aucun fichier sélectionné."})
     }
-    return out;
 }
 
-
-export { ALPHABETSIZE, intsToString, stringToInts }
+export { download, upload }
