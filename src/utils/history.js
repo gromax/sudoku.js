@@ -1,7 +1,7 @@
-import { COLORS, DIRECTION } from "../constantes"
 import { Events } from './events';
 import { Selection } from './selection';
 import {Action, ActionBorder, ActionColor, ActionDigit} from './action';
+import { download, upload } from './misc';
 
 const SYMBOLS = {
     "color": "_",
@@ -38,8 +38,11 @@ class History {
         eventsGest.addEvent("forwardClick", function(e,data){
             self.forward(e);
         });
-        eventsGest.addEvent("load", function(e,data){
-            self.load(e);
+        eventsGest.addEvent("download", function(e,data){
+            download(self.code, "sudoku.txt");
+        });
+        eventsGest.addEvent("upload", function(e,data){
+            upload(function(data){ self.upload(e, data)});
         });
     }
 
@@ -48,7 +51,7 @@ class History {
      * @returns {string}
      */
     get code(){
-        return _.map(this.#liste.slice(0,this.#cursor), function(item){return item.code}).join(",");
+        return JSON.stringify(_.map(this.#liste.slice(0,this.#cursor), function(item){return item.code}));
     }
 
     /**
@@ -57,7 +60,7 @@ class History {
      * @returns {Action[]}
      */
     decodeAll(code){
-        let actionCodes = code.split(',');
+        let actionCodes = JSON.parse(code);
         let actions = [];
         for (let actionCode of actionCodes){
             let action = Action.decode(actionCode,this.#size);
@@ -79,15 +82,14 @@ class History {
 
     /**
      * ajoute un changement de couleur à l'historique
-     * @param {number[]} indexes 
+     * @param {Selection} selection 
      * @param {string} color 
      */
-    pushCol(indexes, color) {
+    pushCol(selection, color) {
         this.#purge();
-        let action = new ActionColor(color, [this.#size, indexes]);
+        let action = new ActionColor(color, selection);
         this.#liste.push(action);
         this.#cursor++;
-        this.#changeHistoryText();
     }
 
     /**
@@ -101,7 +103,6 @@ class History {
         let action = new ActionBorder(color, direction, selection);
         this.#liste.push(action);
         this.#cursor++;
-        this.#changeHistoryText();
     }
 
     /**
@@ -116,7 +117,6 @@ class History {
         let action = new ActionDigit(digit, anchor, color, selection);
         this.#liste.push(action);
         this.#cursor++;
-        this.#changeHistoryText();
     }
 
     /**
@@ -130,7 +130,6 @@ class History {
         }
         let action = this.#liste[this.#cursor];
         this.#cursor++;
-        this.#changeHistoryText();
         this.#eventsGest.triggerEvent("forward", e, {action:action});
     }
 
@@ -144,28 +143,30 @@ class History {
             return;
         }
         this.#cursor--;
-        this.#changeHistoryText();
         this.#eventsGest.triggerEvent("back", e, {actions:this.#liste.slice(0, this.#cursor)});
     }
 
     /**
      * charge le nouvel historique et place le curseur en 0
+     * @param {Event} e
+     * @param {*} data
      */
-    load(e) {
-        let histoText = document.getElementById('history').value;
-        let actions = this.decodeAll(histoText);
-        if (actions == null) {
-            console.log("Échec !");
+    upload(e, data) {
+        if (data.success) {
+            let actions = this.decodeAll(data.content);
+            if (actions == null) {
+                this.#eventsGest.triggerEvent("errorMessage", e, {content:"Échec !"});
+            }
+            this.#liste = actions;
+            this.#cursor = 0;
+            this.#eventsGest.triggerEvent("successMessage", e, {content:"Chargement réussi !"});
+            this.#eventsGest.triggerEvent("back", e, {actions:[]});
+        } else {
+            this.#eventsGest.triggerEvent("errorMessage", e, data);
         }
-        this.#liste = actions;
-        console.log(actions);
-        this.#cursor = 0;
-        this.#eventsGest.triggerEvent("back", e, {actions:[]});
     }
 
-    #changeHistoryText() {
-        document.getElementById("history").value = this.code;
-    }
+
 }
 
 export { History }
