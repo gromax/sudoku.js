@@ -7,6 +7,7 @@ import { Events } from "../utils/events";
 import { Pad } from "../interface/pad";
 import { Action, ActionColor, ActionDigit } from "../utils/action";
 import { Selection } from "../utils/selection";
+import { Messages } from "../graphic/messages";
 
 class Game {
     /** @type {Cells} */
@@ -26,6 +27,7 @@ class Game {
         let board = new Board(idBoard, format, commandes, eventsGest);
         let gSelection = new GSelection(board.layer("selection"), board.width, board.height, eventsGest);
         let history = new History(board.width, board.height, eventsGest);
+        new Messages(eventsGest);
         new Pad(idPad, eventsGest);
   
         this.#cells = new Cells(board.layer("frontCell"), board.layer("backCell"), board.width, board.height);
