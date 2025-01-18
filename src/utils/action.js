@@ -2,74 +2,13 @@ import { COLORS, DIRECTION, ANCRES } from "../constantes";
 import { Selection } from "./selection";
 
 
-/** renvoie la couleur correspondant à un caractère représentant un indice de couleur
- * renvoie "" en cas de problème
- * @param {string} strCol
- * @returns {string}
- */
-function getColor(strCol){
-    let iCol = parseInt(strCol);
-    if ((strCol.length==0)||(strCol.length>1)){
-        throw new Error(`${strCol} : invalide, il faut un caractère.`);
-    }
-    if (isNaN(iCol)) {
-        return "";
-    }
-    if (iCol>= COLORS.length){
-        return "";
-    }
-    return COLORS[iCol];
-}
-
-/**
- * renvoie le code de direction correspondant à un caractère codant cette direction
- * en cas de défaut, renvoie -1
- * @param {string} strDir
- * @returns {number}
- */
-function getDirection(strDir){
-    if ((strDir.length==0)||(strDir.length>1)){
-        throw new Error(`${strDir} : invalide, il faut un caractère.`);
-    }
-    let iDir = parseInt(strDir);
-    if (isNaN(iDir)) {
-        return -1;
-    }
-    for (let key in DIRECTION) {
-        if (DIRECTION[key]==iDir){
-            return iDir
-        }
-    }
-    return -1;
-}
-
-/**
- * renvoie le code d'ancre correspondant à un caractère codant cette ancre
- * en cas de défaut, renvoie -1
- * @param {string} strAnchor
- * @returns {string}
- */
-function getAnchor(strAnchor){
-    if ((strAnchor.length==0)||(strAnchor.length>1)){
-        throw new Error(`${strDir} : invalide, il faut un caractère.`);
-    }
-    let iAnchor = parseInt(strAnchor);
-    if (isNaN(iAnchor)) {
-        return "";
-    }
-    for (let anchor in ANCRES){
-        if (ANCRES[anchor] == iAnchor) {
-            return anchor;
-        }
-    }
-    return "";
-}
-
 class Action {
     /** @type {Selection} */
     #selection
     /** @type {string} */
     #color
+    /** @type {string} */
+    #comment
 
     /**
      * décode un code d'historique
@@ -78,14 +17,14 @@ class Action {
      * @returns {Action|null}
      */
     static decode(actionCode, size) {
-        if (actionCode.length==0){
+        if (typeof actionCode != "object"){
             return null;
         }
-        if (actionCode.charAt(0) == "C") {
+        if (actionCode.type == "color") {
             return ActionColor.decode(actionCode, size);
-        } else if (actionCode.charAt(0) == "B") {
+        } else if (actionCode.type == "border") {
             return ActionBorder.decode(actionCode, size);
-        } else if (actionCode.charAt(0) == "D") {
+        } else if (actionCode.type == "digit") {
             return ActionDigit.decode(actionCode, size);
         }
         return null;
@@ -96,14 +35,20 @@ class Action {
      * constructeur
      * @param {string} color 
      * @param {Selection} selection
+     * @param {string} comment
      */
-    constructor(color, selection){
+    constructor(color, selection, comment=""){
         this.#color = color;
         this.#selection = selection;
+        this.#comment = comment;
     }
 
     get selection() {
         return this.#selection;
+    }
+
+    get comment() {
+        return this.#comment;
     }
 
     get color() {
@@ -116,6 +61,10 @@ class Action {
             return i;
         }
         return -1;
+    }
+
+    setComment(comment){
+        this.#comment = comment;
     }
 }
 
@@ -142,10 +91,17 @@ class ActionBorder extends Action {
         return this.#direction;
     }
 
+    /**
+     * @returns {string}
+     */
     get code() {
-        let strCol = this.iCol<0 ? "_" : this.iCol;
-        let strDir = this.direction<0 ? "_" : this.direction;
-        return "B" + strCol + strDir + this.selection.code;
+        return {
+            type:"border",
+            direction:this.direction,
+            color:this.color,
+            selection:this.selection.code,
+            comment:this.comment
+        };
     }
 
     /**
@@ -155,17 +111,13 @@ class ActionBorder extends Action {
      * @returns {ActionBorder|null}
      */
     static decode(actionCode, size) {
-        if (actionCode.length<3){
-            return null;
+        for (let key of ["direction", "color", "selection"]){
+            if (typeof actionCode[key] == "undefined") {
+                return null;
+            }
         }
-        let color = getColor(actionCode.charAt(1));
-        if (color=="") {
-            return null;
-        }
-        let iDir = getDirection(actionCode.charAt(2));
-        let path = actionCode.substring(3);
-        let selection = new Selection(path, size);
-        return new ActionBorder(color, iDir,selection);
+        let selection = new Selection(actionCode.selection, size);
+        return new ActionBorder(actionCode.color, actionCode.direction,selection);
     }
 
 }
@@ -182,8 +134,12 @@ class ActionColor extends Action {
     }
 
     get code() {
-        let strCol = this.iCol<0 ? "_" : this.iCol;
-        return "C" + strCol + this.selection.code;
+        return {
+            type:"color",
+            color:this.color,
+            selection:this.selection.code,
+            comment:this.comment
+        };
     }
 
     /**
@@ -193,13 +149,13 @@ class ActionColor extends Action {
      * @returns {ActionColor|null}
      */
     static decode(actionCode, size) {
-        if (actionCode.length<3){
-            return null;
+        for (let key of ["color", "selection"]){
+            if (typeof actionCode[key] == "undefined") {
+                return null;
+            }
         }
-        let color = getColor(actionCode.charAt(1));
-        let path = actionCode.substring(2);
-        let selection = new Selection(path, size);
-        return new ActionColor(color, selection);
+        let selection = new Selection(actionCode.selection, size);
+        return new ActionColor(actionCode.color, selection);
     }
 }
 
@@ -239,10 +195,14 @@ class ActionDigit extends Action {
     }
 
     get code() {
-        if (this.iCol<0) {
-            return "D_" + this.iAnchor + this.selection.code;
-        }
-        return "D" + this.digit + this.iAnchor + this.iCol + this.selection.code;
+        return {
+            type:"digit",
+            color:this.color,
+            digit:this.digit,
+            anchor:this.anchor,
+            selection:this.selection.code,
+            comment:this.comment
+        };
     }
 
     /**
@@ -252,27 +212,13 @@ class ActionDigit extends Action {
      * @returns {ActionColor|null}
      */
     static decode(actionCode, size) {
-        if (actionCode.length<4){
-            return null;
-        }
-        let anchor = getAnchor(actionCode.charAt(2));
-        if (anchor == ""){
-            return null;
-        }
-        if (actionCode.charAt(1) == "_") {
-            let path = actionCode.substring(3);
-            let selection = new Selection(path, size);
-            return new ActionDigit("", anchor, "", selection);
-        } else {
-            let digit = actionCode.charAt(1);
-            if (isNaN(digit)) {
+        for (let key of ["digit", "color", "anchor", "selection"]){
+            if (typeof actionCode[key] == "undefined") {
                 return null;
             }
-            let color = getColor(actionCode.charAt(3));
-            let path = actionCode.substring(4);
-            let selection = new Selection(path, size);
-            return new ActionDigit(digit, anchor, color, selection);
         }
+        let selection = new Selection(actionCode.selection, size);
+        return new ActionDigit(actionCode.digit, actionCode.anchor, actionCode.color, selection);
     }
 }
 
