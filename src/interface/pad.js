@@ -106,9 +106,19 @@ class Pad {
             });
         });
 
-        new Button(this.#canvas, 0, 3, eventsGest, {
-            "event":"load",
-            "picto":"file"
+        new Button(this.#canvas, 1, 7, eventsGest, {
+            "event":"download",
+            "picto":"download"
+        });
+
+        new Button(this.#canvas, 2, 7, eventsGest, {
+            "event":"upload",
+            "picto":"upload"
+        });
+
+        new Button(this.#canvas, 3, 7, eventsGest, {
+            "event":"commentClick",
+            "picto":"bulle"
         });
 
         new Button(this.#canvas, 0, 5, eventsGest, {
