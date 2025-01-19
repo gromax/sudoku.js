@@ -166,6 +166,31 @@ class History {
         }
     }
 
+    /**
+     * accesseur action en cours (celle avant #cursor)
+     * @returns {Action|null}
+     */
+    get currentAction(){
+        if (this.#cursor == 0) {
+            return null;
+        }
+        return this.#liste[this.#cursor-1];
+    }
+
+    setComment(comment) {
+        if (this.#cursor==0) {
+            let action = new Action("", new Selection([], this.#size), comment);
+            this.#liste.splice(0, 0, action);
+            this.#cursor++;
+
+        } else {
+            this.#liste[this.#cursor-1].setComment(comment);
+        }
+        this.#eventsGest.triggerEvent("message", null, {
+            content:comment,
+            clear:true
+        });
+    }
 
 }
 
