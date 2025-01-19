@@ -116,10 +116,10 @@ class Pad {
             "picto":"upload"
         });
 
-        new Button(this.#canvas, 3, 7, eventsGest, {
+        (new Button(this.#canvas, 3, 7, eventsGest, {
             "event":"commentClick",
             "picto":"bulle"
-        });
+        })).setBistable();
 
         new Button(this.#canvas, 0, 5, eventsGest, {
             "picto":"undo",
