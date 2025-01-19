@@ -7,7 +7,8 @@ import { Events } from "../utils/events";
 import { Pad } from "../interface/pad";
 import { Action, ActionColor, ActionDigit } from "../utils/action";
 import { Selection } from "../utils/selection";
-import { Messages } from "../graphic/messages";
+import { Messages } from "../interface/messages";
+import { Saisie } from "../interface/saisie";
 
 class Game {
     /** @type {Cells} */
@@ -27,7 +28,8 @@ class Game {
         let board = new Board(idBoard, format, commandes, eventsGest);
         let gSelection = new GSelection(board.layer("selection"), board.width, board.height, eventsGest);
         let history = new History(board.width, board.height, eventsGest);
-        new Messages(eventsGest);
+        let messages = new Messages(eventsGest);
+        let saisie = new Saisie("comment", eventsGest);
         new Pad(idPad, eventsGest);
   
         this.#cells = new Cells(board.layer("frontCell"), board.layer("backCell"), board.width, board.height);
@@ -49,6 +51,7 @@ class Game {
             let digit = data.digit || "";
             history.pushDigit(selection, digit, data.anchor, color);
             self.digit(selection, digit, data.anchor, color);
+            messages.clear();
         });
 
         eventsGest.addEvent("paint", function(e,data){
@@ -59,6 +62,7 @@ class Game {
             let color = data != null ? (data.color||"") : "";
             history.pushCol(selection, color);
             self.paint(selection, color);
+            messages.clear();
         });
 
         eventsGest.addEvent("border", function(e,data){
@@ -75,6 +79,7 @@ class Game {
             }
             history.pushBorder(selection, data.color, direction);
             self.border(selection, data.color, direction);
+            messages.clear();
         });
 
         eventsGest.addEvent("back", function(e, data) {
@@ -85,6 +90,13 @@ class Game {
             for (let action of data.actions) {
                 self.execAction(action);
             }
+            if (data.actions.length>0) {
+                let last = data.actions[data.actions.length-1];
+                eventsGest.triggerEvent("message", e, {
+                    content:last.comment,
+                    clear:true
+                });
+            }
         });
 
         eventsGest.addEvent("forward", function(e,data) {
@@ -92,7 +104,29 @@ class Game {
                 return;
             }
             self.execAction(data.action);
+            eventsGest.triggerEvent("message", e, {
+                content:data.action.comment,
+                clear:true
+            });
+        });
+
+        eventsGest.addEvent("commentClick", function(e, data){
+            if (!data) {
+                return;
+            }
+            if (data.selected) {
+                let action = history.currentAction;
+                let comment = action==null?"":action.comment;
+                saisie.show(comment);
+            } else {
+                saisie.hide();
+            }
+        });
+
+        eventsGest.addEvent("submitSaisie", function(e, data){
+            history.setComment(data.text);
         })
+
     }
 
     /**
