@@ -26,10 +26,11 @@ class Action {
             return ActionBorder.decode(actionCode, size);
         } else if (actionCode.type == "digit") {
             return ActionDigit.decode(actionCode, size);
+        } else if (actionCode.type == "comment") {
+            return new Action("", new Selection([], size), actionCode.comment);
         }
         return null;
     }
-
 
     /**
      * constructeur
@@ -66,6 +67,16 @@ class Action {
     setComment(comment){
         this.#comment = comment;
     }
+
+    /**
+     * @returns {Object}
+     */
+    get code() {
+        return {
+            type:"comment",
+            comment:this.comment
+        };
+    }
 }
 
 class ActionBorder extends Action {
@@ -92,7 +103,7 @@ class ActionBorder extends Action {
     }
 
     /**
-     * @returns {string}
+     * @returns {Object}
      */
     get code() {
         return {
