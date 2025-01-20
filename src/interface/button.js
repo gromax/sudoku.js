@@ -4,23 +4,21 @@ import { Canvas } from '../graphic/canvas';
 import { Events } from '../utils/events';
 
 const PICTOS = {
-    "bell":      ["./img/bell.svg", -152, -172, .13],
-    "paint":     ["./img/paint.svg", 29, 29, 2],
-    "eraser":    ["./img/eraser.svg", 29, 29, 2.5],
-    "eraserc":   ["./img/eraser_color.svg", 29, 29, 2.5],
-    "left":      ["./img/left_border.svg", 30, 30, 2.5],
-    "right":     ["./img/right_border.svg", 30, 30, 2.5],
-    "top":       ["./img/top_border.svg", 30, 30, 2.5],
-    "bottom":    ["./img/bottom_border.svg", 30, 30, 2.5],
-    "selection": ["./img/selection.svg", 30, 30, 2.5],
-    "pen":       ["./img/pen.svg", 29, 29, 2.5],
-    "outer":     ["./img/outer_border.svg", 29, 29, 2.5],
-    "undo":      ["./img/undo.svg", 29, 29, 2.5],
-    "redo":      ["./img/redo.svg", 29, 29, 2.5],
-    "file":      ["./img/file.svg", 29, 29, 2.5],
-    "upload":    ["./img/upload.svg", 29, 29, 2.5],
-    "download":  ["./img/download.svg", 29, 29, 2.5],
-    "bulle":     ["./img/bulle.svg", 1770, 740, 0.4],
+    "paint":     ["./img/paint.svg", 23, 21, 1.5],
+    "eraser":    ["./img/eraser.svg", 23, 25, 2],
+    "eraserc":   ["./img/eraser_color.svg", 23, 21, 2],
+    "left":      ["./img/left_border.svg", 22, 22, 2],
+    "right":     ["./img/right_border.svg", 22, 22, 2],
+    "top":       ["./img/top_border.svg", 22, 22, 2],
+    "bottom":    ["./img/bottom_border.svg", 22, 22, 2],
+    "selection": ["./img/selection.svg", 22, 22, 2],
+    "outer":     ["./img/outer_border.svg", 22, 22, 2],
+    "undo":      ["./img/undo.svg", 22, 22, 2],
+    "redo":      ["./img/redo.svg", 22, 22, 2],
+    "file":      ["./img/file.svg", 22, 22, 2],
+    "upload":    ["./img/upload.svg", 22, 19, 1.8],
+    "download":  ["./img/download.svg", 22, 19, 1.8],
+    "bulle":     ["./img/bulle.svg", 1270, 500, 0.3],
 };
 
 
