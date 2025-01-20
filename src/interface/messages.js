@@ -80,7 +80,7 @@ class Messages {
     }
 
     message(content) {
-        this.#makeDiv(content);
+        this.#makeDiv(content).classList.add("message");
     }
 
 }
