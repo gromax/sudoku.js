@@ -7,8 +7,8 @@ import { Events } from "../utils/events";
 
 class Pad {
     static HEIGHT = 400;
-    static WIDTH = 1000;
-    static BUTTONSIZE = 80;
+    static WIDTH = 800;
+    static BUTTONSIZE = 60;
 
 
     /** @type {SVG.SVG} */
