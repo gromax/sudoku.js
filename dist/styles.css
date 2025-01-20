@@ -4,70 +4,6 @@ body {
     max-width: 800px;
 }
 
-h1 {
-    font-size: 30pt;
-}
-
-h2 {
-    font-size: 22pt;
-}
-
-p {
-    text-align: justify;
-    padding: 3px;
-    font-size: 14pt;
-}
-
-li {
-    text-align: justify;
-    padding: 3px;
-    font-size: 14pt;
-}
-
-b.attention {
-    color:red;
-}
-
-.code {
-    font-family: monospace;
-    background-color: #EEE;
-    padding: 1pt;
-}
-
-
-textarea.program {
-    width: 90%;
-    height: 260px;
-    font-family: monospace;
-    font-size: 12pt;
-    padding: 5pt;
-    margin: 5pt;
-    resize: vertical;
-}
-
-
-
-input.program {
-    font-size: 16pt;
-    padding: 4pt;
-}
-
-div.error {
-    width: 90%;
-    height: 70px;
-    border-width: 1px;
-    border:'#000';
-    border-style: solid;
-    padding:5px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    margin:5pt;
-}
-
-.errorline { color:crimson; }
-.validline { color:forestgreen; }
-.message { margin-block-start: 1px; margin-block-end: 1px; }
-
 svg text{
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -75,6 +11,58 @@ svg text{
     user-select: none;
  }
 
- textarea {
+#saisie textarea {
+    margin:auto;
+    width:90%;
+    margin: 5px;
+    padding: 10px;
+    border-radius: 25px;
+    border: 5px solid #ff8800;
+    background-color: ivory;
+}
+
+#saisie .validation {
+    padding:10px 40px;
+    border-radius: 25px;
+    background-color: darkgreen;
+    color:white;
+    border:0px;
+}
+
+#saisie .validation:hover {
+    background-color: rgb(197, 197, 197);
+    color:black;
+    border: 2px solid black;
+}
+
+#messages {
+    margin:auto;
+    width:90%;
+}
+#messages div.message {
     width:100%;
- }
+    padding:5px;
+    margin:10px;
+    background-color:beige;
+    border-radius: 25px;
+    border: 2px solid black;
+    color: #111;
+}
+
+#messages div.error {
+    padding:5px;
+    margin:5px;
+    background-color: #e9724e;
+    border-radius: 25px;
+    border: 2px solid #5c2c1d;
+    color: #111;
+}
+
+#messages div.success {
+    padding:5px;
+    margin:5px;
+    background-color: #63cc82;
+    border-radius: 25px;
+    border: 2px solid #193120;
+    color: #111;
+}
