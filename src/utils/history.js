@@ -73,6 +73,22 @@ class History {
         return actions;
     }
 
+    setActions(actionsJSON) {
+        let actions = [];
+        for (let actionJSON of actionsJSON){
+            let action = Action.decode(actionJSON,this.#size);
+            if (action == null) {
+                console.log(`${actionJSON} non reconnu`);
+                return null;
+            }
+            actions.push(action);
+        }
+        this.#liste = actions;
+        this.#cursor = 0;
+        this.#eventsGest.triggerEvent("successMessage", e, {content:"Chargement réussi !"});
+        this.#eventsGest.triggerEvent("back", e, {actions:[]});
+    }
+
     /**
      * supprime l'historique à partir du rang #cursor
      */
