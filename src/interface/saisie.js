@@ -48,6 +48,7 @@ class Saisie {
         let inp = document.createElement("input");
         inp.type = "submit";
         inp.value = "valider";
+        inp.classList.add("validation");
         form.appendChild(textarea);
         form.appendChild(inp);
         let self = this;
