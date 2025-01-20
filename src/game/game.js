@@ -16,6 +16,9 @@ class Game {
     /** @type {Borders} */
     #borders;
 
+    /** @type {History} */
+    #history;
+
     /**
      * constructeur
      * @param {string} idBoard
@@ -126,7 +129,7 @@ class Game {
         eventsGest.addEvent("submitSaisie", function(e, data){
             history.setComment(data.text);
         })
-
+        this.#history = history;
     }
 
     /**
@@ -142,6 +145,10 @@ class Game {
         } else {
             this.#toggleDigit(selection, digit, anchor, color);
         }
+    }
+
+    setHistory(actions) {
+        this.#history.setActions(actions);
     }
 
     /**
