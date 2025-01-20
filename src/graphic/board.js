@@ -4,14 +4,14 @@ import { SVG } from '@svgdotjs/svg.js';
 import { Canvas } from './canvas';
 import { Coords } from '../utils/coords';
 import { Events } from '../utils/events';
+import { CELLSIZE } from '../constantes';
 
 /**
  * @typedef {Object.<string,Canvas>} Layers
  */
 
 class Board {
-    static SIZE = 1100;
-    static DEFAULTCELLSIZE = 100;
+    static SIZE = 800;
     static GRIDSTROKE = { width:2, color:'#000' };
     static GRIDTHICKSTROKE = { width:5, color:'#000' };
     /** @type {number} */
@@ -37,7 +37,7 @@ class Board {
     constructor(id, format, commandes, eventsGest) {
         this.#layers = {};
         this.#content = SVG().addTo(id).size(Board.SIZE, Board.SIZE);
-        this.#cellsize = Board.DEFAULTCELLSIZE;
+        this.#cellsize = CELLSIZE;
         this.#content.rect(Board.SIZE, Board.SIZE).fill('#fff').stroke('none');
         this.#makeGrid(format.trim());
         this.#parse(commandes.trim());
