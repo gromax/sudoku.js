@@ -54,7 +54,7 @@ class History {
      * @returns {string}
      */
     get code(){
-        return JSON.stringify(_.map(this.#liste.slice(0,this.#cursor), function(item){return item.code}));
+        return JSON.stringify(_.map(this.#liste.slice(0,this.#cursor), function(item){return item.code})).replaceAll(',{',',\n{');
     }
 
     /**
