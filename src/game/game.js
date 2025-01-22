@@ -103,14 +103,18 @@ class Game {
         });
 
         eventsGest.addEvent("forward", function(e,data) {
-            if ((data == null) || (typeof data.action == 'undefined')) {
+            if ((data == null) || (typeof data.actions == 'undefined')) {
                 return;
             }
-            self.execAction(data.action);
-            eventsGest.triggerEvent("message", e, {
-                content:data.action.comment,
-                clear:true
-            });
+            for (let action of data.actions) {
+                self.execAction(action);
+            }
+            if (data.actions.length>0){
+                eventsGest.triggerEvent("message", e, {
+                    content:data.actions[data.actions.length-1].comment,
+                    clear:true
+                });
+            }
         });
 
         eventsGest.addEvent("commentClick", function(e, data){
