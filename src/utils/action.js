@@ -87,10 +87,11 @@ class ActionBorder extends Action {
      * constructeur
      * @param {string} color 
      * @param {number} direction 
-     * @param {Selection} selection 
+     * @param {Selection} selection
+     * @param {string} comment
      */
-    constructor(color, direction, selection){
-        super(color, selection);
+    constructor(color, direction, selection, comment=""){
+        super(color, selection, comment);
         if (Object.values(DIRECTION).indexOf(direction) <0){
             this.#direction = -1;
         } else {
@@ -110,7 +111,7 @@ class ActionBorder extends Action {
             type:"border",
             direction:this.direction,
             color:this.color,
-            selection:this.selection.code,
+            selection:this.selection.indexes,
             comment:this.comment
         };
     }
@@ -128,7 +129,7 @@ class ActionBorder extends Action {
             }
         }
         let selection = new Selection(actionCode.selection, size);
-        return new ActionBorder(actionCode.color, actionCode.direction,selection);
+        return new ActionBorder(actionCode.color, actionCode.direction,selection, actionCode.comment);
     }
 
 }
@@ -138,17 +139,18 @@ class ActionColor extends Action {
     /**
      * constructeur
      * @param {string} color 
-     * @param {Selection} selection 
+     * @param {Selection} selection
+     * @param {string} comment
      */
-    constructor(color, selection){
-        super(color, selection);
+    constructor(color, selection, comment=""){
+        super(color, selection, comment);
     }
 
     get code() {
         return {
             type:"color",
             color:this.color,
-            selection:this.selection.code,
+            selection:this.selection.indexes,
             comment:this.comment
         };
     }
@@ -166,7 +168,7 @@ class ActionColor extends Action {
             }
         }
         let selection = new Selection(actionCode.selection, size);
-        return new ActionColor(actionCode.color, selection);
+        return new ActionColor(actionCode.color, selection, actionCode.comment);
     }
 }
 
@@ -181,10 +183,11 @@ class ActionDigit extends Action {
      * @param {string} digit 
      * @param {string} anchor 
      * @param {string} color 
-     * @param {Selection} selection 
+     * @param {Selection} selection
+     * @param {string} comment
      */
-    constructor(digit, anchor, color, selection){
-        super(color, selection);
+    constructor(digit, anchor, color, selection, comment=""){
+        super(color, selection, comment);
         this.#digit = digit;
         if (typeof ANCRES[anchor] == "undefined") {
             this.#anchor = "P";
@@ -211,7 +214,7 @@ class ActionDigit extends Action {
             color:this.color,
             digit:this.digit,
             anchor:this.anchor,
-            selection:this.selection.code,
+            selection:this.selection.indexes,
             comment:this.comment
         };
     }
@@ -229,7 +232,7 @@ class ActionDigit extends Action {
             }
         }
         let selection = new Selection(actionCode.selection, size);
-        return new ActionDigit(actionCode.digit, actionCode.anchor, actionCode.color, selection);
+        return new ActionDigit(actionCode.digit, actionCode.anchor, actionCode.color, selection, actionCode.comment);
     }
 }
 
