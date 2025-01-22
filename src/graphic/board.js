@@ -97,6 +97,9 @@ class Board {
             if (this.#tryLine(com)) {
                 continue;
             }
+            if (this.#tryDisc(com)) {
+                continue;
+            }
             if (this.#tryCage(com)) {
                 continue;
             }
@@ -158,6 +161,34 @@ class Board {
     }
 
     /**
+     * Essaie d'éxécuter la commamande en tant que tracer un disque
+     * Exemple de commande : DiBC:gb45
+     * Di: identifie la commande
+     * BC: position
+     * [:gb]:couleur, première stroke Color, second fill color
+     * 45: diamètre en % de l'unité
+     * @param {string} com 
+     * @returns {boolean}
+     */
+    #tryDisc(com){
+        let r = new RegExp(`^Di(?<chaine>(${Coords.REGEX}){1})(:(?<color>[a-zA-Z_]{1,2}))?(?<size>[0-9]{1,2})?$`, "g");
+        let m = r.exec(com);
+        if (m === null) {
+            return false;
+        }
+        let coords = Coords.strToCoords(m.groups.chaine);
+        let stringColor = m.groups.color || '_';
+        let strokeColor = Canvas.color(stringColor[0]);
+        let fillColor = (stringColor.length == 2)? Canvas.color(stringColor[1]) : 'none';
+        let stringSize = m.groups.size || '100';
+        let size = parseInt(stringSize)/100;
+        console.log(size, coords, fillColor, strokeColor);
+        this.#layers.decorations.disc(coords[0].line, coords[0].col, size).fill(fillColor).stroke({width:3, color:strokeColor});
+        console.log("pwet");
+        return true;
+    }
+    
+    /**
      * Essaie d'exécuter la commande en tant que tracer de cage,
      * c'est à dire une ligne pointillée à l'intérieur du cadre d'un ensemble de cellules
      * Exemple de commande valide : Cageefeff:g:0-{tag}
@@ -217,10 +248,6 @@ class Board {
      * @returns {boolean}
      */
     #tryDigit(com){
-        /*
-          Écriture d'un chiffre simple
-          
-        */
         let r = new RegExp(`^(?<digit>[0-9])(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
@@ -258,7 +285,7 @@ class Board {
         let color = Canvas.color(stringColor[0]);
         let backColor = (stringColor.length == 2)? Canvas.color(stringColor[1]) : 'none';
         let anchor = m.groups.anchor || 'C';
-        let stringSize = m.groups.size || 'h99';
+        let stringSize = m.groups.size || 's100';
         let size = parseInt(stringSize.substring(1))/100;
         let coord = Coords.paireToCoord(m.groups.pos);
         let angle = m.groups.angle || '0';
