@@ -131,6 +131,11 @@ class Pad {
             "event":"forwardClick"
         });
 
+        new Button(this.#canvas, 0, 7, eventsGest, {
+            "picto":"bullenext",
+            "event":"forwardCommentClick"
+        });
+
         for (let i=0; i<3; i++) {
             for (let j=0; j<3; j++) {
                 let value = `${i*3+j+1}`;
