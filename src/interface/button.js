@@ -19,6 +19,7 @@ const PICTOS = {
     "upload":    ["./img/upload.svg", 22, 19, 1.8],
     "download":  ["./img/download.svg", 22, 19, 1.8],
     "bulle":     ["./img/bulle.svg", 1270, 500, 0.3],
+    "bullenext": ["./img/bulleNext.svg", 1260, -100, 0.3],
 };
 
 
