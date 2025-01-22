@@ -38,6 +38,9 @@ class History {
         eventsGest.addEvent("forwardClick", function(e,data){
             self.forward(e);
         });
+        eventsGest.addEvent("forwardCommentClick", function(e,data){
+            self.forwardComment(e);
+        });
         eventsGest.addEvent("download", function(e,data){
             download(self.code, "sudoku.txt");
         });
@@ -136,6 +139,23 @@ class History {
     }
 
     /**
+     * Avance jusqu'à la prochain action avec commentaire
+     * @param {Event} e 
+     */
+    forwardComment(e){
+        let actions = [];
+        while (this.#cursor<this.#liste.length) {
+            let action = this.#liste[this.#cursor];
+            this.#cursor++;
+            actions.push(action);
+            if (action.comment != "") {
+                break;
+            }
+        }
+        this.#eventsGest.triggerEvent("forward", e, {actions:actions});
+    }
+
+    /**
      * fait avancer d'un pas dans l'historique
      * déclence un événement avec l'action suivante
      * @param {Event}
@@ -146,7 +166,7 @@ class History {
         }
         let action = this.#liste[this.#cursor];
         this.#cursor++;
-        this.#eventsGest.triggerEvent("forward", e, {action:action});
+        this.#eventsGest.triggerEvent("forward", e, {actions:[action]});
     }
 
     /**
