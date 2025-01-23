@@ -25,4 +25,10 @@ let coms = [
     'Tag{1}JJ:k.C'
   ].join(';');
   
-  new GameModule.Game("#board", "#pad", '9x9S', coms);
+let g = new GameModule.Game("#board", "#pad", '9x9S', coms);
+
+let url = window.location.href;
+let i = url.indexOf('#');
+if (i>=0) {
+  g.load(url.substring(i+1));
+}
