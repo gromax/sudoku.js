@@ -13,19 +13,18 @@ class Action {
     /**
      * décode un code d'historique
      * @param {string} actionCode 
-     * @param {number} size
      * @returns {Action|null}
      */
-    static decode(actionCode, size) {
+    static decode(actionCode) {
         if (typeof actionCode != "object"){
             return null;
         }
         if (actionCode.type == "color") {
-            return ActionColor.decode(actionCode, size);
+            return ActionColor.decode(actionCode);
         } else if (actionCode.type == "border") {
-            return ActionBorder.decode(actionCode, size);
+            return ActionBorder.decode(actionCode);
         } else if (actionCode.type == "digit") {
-            return ActionDigit.decode(actionCode, size);
+            return ActionDigit.decode(actionCode);
         } else if (actionCode.type == "comment") {
             return new Action("", new Selection([], size), actionCode.comment);
         }
@@ -119,16 +118,15 @@ class ActionBorder extends Action {
     /**
      * Décode un code d'historique correspondant à un bord
      * @param {string} actionCode 
-     * @param {number} size 
      * @returns {ActionBorder|null}
      */
-    static decode(actionCode, size) {
+    static decode(actionCode) {
         for (let key of ["direction", "color", "selection"]){
             if (typeof actionCode[key] == "undefined") {
                 return null;
             }
         }
-        let selection = new Selection(actionCode.selection, size);
+        let selection = new Selection(actionCode.selection);
         return new ActionBorder(actionCode.color, actionCode.direction,selection, actionCode.comment);
     }
 
@@ -158,16 +156,15 @@ class ActionColor extends Action {
     /**
      * Décode un code d'historique correspondant à une couleur
      * @param {string} actionCode 
-     * @param {number} size 
      * @returns {ActionColor|null}
      */
-    static decode(actionCode, size) {
+    static decode(actionCode) {
         for (let key of ["color", "selection"]){
             if (typeof actionCode[key] == "undefined") {
                 return null;
             }
         }
-        let selection = new Selection(actionCode.selection, size);
+        let selection = new Selection(actionCode.selection);
         return new ActionColor(actionCode.color, selection, actionCode.comment);
     }
 }
@@ -222,7 +219,6 @@ class ActionDigit extends Action {
     /**
      * Décode un code d'historique correspondant à un digit
      * @param {string} actionCode 
-     * @param {number} size 
      * @returns {ActionColor|null}
      */
     static decode(actionCode, size) {
@@ -231,7 +227,7 @@ class ActionDigit extends Action {
                 return null;
             }
         }
-        let selection = new Selection(actionCode.selection, size);
+        let selection = new Selection(actionCode.selection);
         return new ActionDigit(actionCode.digit, actionCode.anchor, actionCode.color, selection, actionCode.comment);
     }
 }
