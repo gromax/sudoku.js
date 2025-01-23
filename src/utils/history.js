@@ -11,8 +11,6 @@ const SYMBOLS = {
 }
 
 class History {
-    /** @type {number} */
-    #size;
     /** @type {Array<Action>} */
     #liste;
     /** @type {number} */
@@ -25,9 +23,8 @@ class History {
      * @param {number} width
      * @param {number} height
      */
-    constructor(width, height, eventsGest){
+    constructor(eventsGest){
         this.#liste = [];
-        this.#size = height*width;
         this.#cursor = 0;
         this.#eventsGest = eventsGest;
 
@@ -47,6 +44,9 @@ class History {
         eventsGest.addEvent("upload", function(e,data){
             upload(function(data){ self.upload(e, data)});
         });
+        eventsGest.addEvent("load", function(e,data){
+            self.upload(null, {content:data, success:true});
+        });
     }
 
     /**
@@ -54,19 +54,19 @@ class History {
      * @returns {string}
      */
     get code(){
-        return JSON.stringify(_.map(this.#liste.slice(0,this.#cursor), function(item){return item.code})).replaceAll(',{',',\n{');
+        return JSON.stringify(_.map(this.#liste, function(item){return item.code})).replaceAll(',{',',\n{');
     }
 
     /**
      * décode un historique codé
-     * @param {string} code
+     * @param {string|Array} code
      * @returns {Action[]}
      */
     decodeAll(code){
-        let actionCodes = JSON.parse(code);
+        let actionCodes = Array.isArray(code)?code:JSON.parse(code);
         let actions = [];
         for (let actionCode of actionCodes){
-            let action = Action.decode(actionCode,this.#size);
+            let action = Action.decode(actionCode);
             if (action == null) {
                 console.log(`${actionCode} non reconnu`);
                 return null;
@@ -79,7 +79,7 @@ class History {
     setActions(actionsJSON) {
         let actions = [];
         for (let actionJSON of actionsJSON){
-            let action = Action.decode(actionJSON,this.#size);
+            let action = Action.decode(actionJSON);
             if (action == null) {
                 console.log(`${actionJSON} non reconnu`);
                 return null;
@@ -215,7 +215,7 @@ class History {
 
     setComment(comment) {
         if (this.#cursor==0) {
-            let action = new Action("", new Selection([], this.#size), comment);
+            let action = new Action("", new Selection([]), comment);
             this.#liste.splice(0, 0, action);
             this.#cursor++;
 
