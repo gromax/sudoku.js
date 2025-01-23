@@ -148,7 +148,7 @@ class GSelection {
                 out.push(i);
             }
         }
-        return new Selection(out, this.#height*this.#width);
+        return new Selection(out);
     }
 
     /**
