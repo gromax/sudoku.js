@@ -10,14 +10,15 @@ import { Selection } from "../utils/selection";
 import { Messages } from "../interface/messages";
 import { Saisie } from "../interface/saisie";
 
+
 class Game {
     /** @type {Cells} */
     #cells
     /** @type {Borders} */
     #borders;
 
-    /** @type {History} */
-    #history;
+    /** @type {Events} */
+    #eventsGest
 
     /**
      * constructeur
@@ -30,7 +31,7 @@ class Game {
         let eventsGest = new Events();
         let board = new Board(idBoard, format, commandes, eventsGest);
         let gSelection = new GSelection(board.layer("selection"), board.width, board.height, eventsGest);
-        let history = new History(board.width, board.height, eventsGest);
+        let history = new History(eventsGest);
         let messages = new Messages(eventsGest);
         let saisie = new Saisie("comment", eventsGest);
         new Pad(idPad, eventsGest);
@@ -133,7 +134,7 @@ class Game {
         eventsGest.addEvent("submitSaisie", function(e, data){
             history.setComment(data.text);
         })
-        this.#history = history;
+        this.#eventsGest = eventsGest;
     }
 
     /**
@@ -151,8 +152,17 @@ class Game {
         }
     }
 
-    setHistory(actions) {
-        this.#history.setActions(actions);
+    load(filename){
+        let self = this;
+        fetch(`./files/${filename}.txt`).then(response => {
+            if (response.ok){
+                response.json().then(data => {
+                    self.events.triggerEvent("load", null, data);
+                });
+            } else {
+                self.events.triggerEvent("errorMessage", null, {content:`./files/${filename}.txt not found.`});
+            }
+        });
     }
 
     /**
@@ -266,6 +276,14 @@ class Game {
         } else {
             this.border(action.selection, action.color, action.direction);
         }
+    }
+
+    /**
+     * accesseur events
+     * @returns {Events}
+     */
+    get events(){
+        return this.#eventsGest;
     }
 
 
