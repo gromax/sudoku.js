@@ -1,0 +1,1 @@
+[{"type":"comment","comment":"Il y a 4 cages de 2 au centre et une case en dehors. Une recherche systématique montre que nous avons toujours un impair dehors et un seul jeu de paires associées : (3)[14,25,67,89] ; (5)[12,34,67,89] ; (7)[12,34,56,89] ; (9)[23/14,16/25,47/38,58/67]"}]
