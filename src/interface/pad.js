@@ -106,17 +106,17 @@ class Pad {
             });
         });
 
-        new Button(this.#canvas, 1, 7, eventsGest, {
+        new Button(this.#canvas, 4, 4, eventsGest, {
             "event":"download",
             "picto":"download"
         });
 
-        new Button(this.#canvas, 2, 7, eventsGest, {
+        new Button(this.#canvas, 4, 5, eventsGest, {
             "event":"upload",
             "picto":"upload"
         });
 
-        (new Button(this.#canvas, 3, 7, eventsGest, {
+        (new Button(this.#canvas, 4, 6, eventsGest, {
             "event":"commentClick",
             "picto":"bulle"
         })).setBistable();
@@ -135,6 +135,17 @@ class Pad {
             "picto":"bullenext",
             "event":"forwardCommentClick"
         });
+
+        new Button(this.#canvas, 1, 7, eventsGest, {
+            "picto":"bulleprev",
+            "event":"prevCommentClick"
+        });
+
+        new Button(this.#canvas, 2, 7, eventsGest, {
+            "picto":"end",
+            "event":"endClick"
+        });
+
 
         for (let i=0; i<3; i++) {
             for (let j=0; j<3; j++) {
@@ -168,13 +179,12 @@ class Pad {
         ], eventsGest);
 
         let buttonsColor = [];
-        for (let i=0; i<3; i++){
-            for (let j=0; j<3; j++) {
-                let cindex = i*3+j;
-                let c = COLORS[cindex];
-                let b = (new Button(this.#canvas, i+1, j+9, eventsGest, { tag:c })).drawSquare(c, 0.3, 0.3, 0.4);
-                buttonsColor.push(b);
-            }
+        for (let i=0; i<10; i++){
+            let col = i%3;
+            let line = (i-col)/3
+            let c = COLORS[i];
+            let b = (new Button(this.#canvas, line+1, col+9, eventsGest, { tag:c })).drawSquare(c, 0.3, 0.3, 0.4);
+            buttonsColor.push(b);
         }
         this.#radioColor = new Radio("color", buttonsColor, eventsGest);
     }
