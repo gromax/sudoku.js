@@ -11,7 +11,7 @@ import { Text } from './text';
  * @returns {string}
  */
 function addDigitIntoString(chaine, digit) {
-    for (let i in chaine) {
+    for (let i=0; i<chaine.length; i++) {
         let car = chaine[i];
         if (car == digit) {
             return chaine;
@@ -30,7 +30,7 @@ function addDigitIntoString(chaine, digit) {
  * @returns {string}
  */
 function removeDigitFromString(chaine, digit) {
-    for (let i in chaine) {
+    for (let i=0; i<chaine.length; i++) {
         let car = chaine[i];
         if (car == digit) {
             return chaine.substring(0,i) + chaine.substring(i+1);
@@ -100,7 +100,7 @@ class GCell {
      * @returns {GCell}
      */
     removeColor(color) {
-        for (let i in this.#colors) {
+        for (let i=0; i<this.#colors.length; i++) {
             if (this.#colors[i].color == color) {
                 this.#colors.splice(i,1);
                 this.#refreshColor();
@@ -126,7 +126,7 @@ class GCell {
      * @returns {boolean}
      */
     hasColor(color) {
-        for (let i in this.#colors) {
+        for (let i=0; i<this.#colors.length; i++) {
             if (this.#colors[i].color == color) {
                 return true;
             }
