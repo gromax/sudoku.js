@@ -6,6 +6,7 @@ let coms = [
     'DiDd:kw30',
     'DiDf:kw30',
     'DiDi:kw30',
+    'DiGg:kw30',
     'DiHd:kw30',
     'DiHg:kw30',
     'DiHj:kw30',
