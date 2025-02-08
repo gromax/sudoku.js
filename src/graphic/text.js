@@ -204,21 +204,23 @@ class Text {
 
     /**
      * Fait pivoter dans le sens horaire
+     * @param {number} angle
      * @returns {Text}
      */
-    turnClockWise() {
-        this.#svgText.rotate(90,this.#x,this.#y);
-        this.#cadre.rotate(90,this.#x,this.#y);
+    turnClockWise(angle=90) {
+        this.#svgText.rotate(angle,this.#x,this.#y);
+        this.#cadre.rotate(angle,this.#x,this.#y);
         return this;
     }
 
     /**
      * fait pivoter dans le sens anti-horaire
+     * @param {number} angle
      * @returns {Text}
      */
-    turnCounterClockWise() {
-        this.#svgText.rotate(-90,this.#x,this.#y);
-        this.#cadre.rotate(-90,this.#x,this.#y);
+    turnCounterClockWise(angle=90) {
+        this.#svgText.rotate(-angle,this.#x,this.#y);
+        this.#cadre.rotate(-angle,this.#x,this.#y);
         return this;
     }
 
