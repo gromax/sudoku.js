@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Quantique</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/vnd.icon" href="favicon.ico">
+    <script src="game.js"></script>
+  </head>
+  <body class="largeur">
+    <div id="board"></div>
+	  
+    <div id="messages">
+      <div class="message">
+        <p>Les règles du Sudoku s'appliquent.</p>
+        <p>Une cage est pairée avec exactement une autre de même couleur. Les digits peuvent se répéter dans une cage.</p>
+        <p>Quand deux cages sont pairées, les deux chiffres indiquent leur somme. Par exemple, si la cage 1 est pairée avec la 3, la somme des deux sera 13 ou 31.</p>
+        <p>Si une cage 0 est pairée avec une cage par ex. 4, la somme peut être 04 ou 40.</p>
+        <p>Les cercles indiquent des digits consécutifs (tous les consécutifs ne sont pas indiqués).</p>
+      </div>
+    </div>
+    <div id="saisie"></div>
+    <div id="pad"></div>
+    <script src="quantique.js"></script>
+  </body>
+</html>
