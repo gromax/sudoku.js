@@ -276,7 +276,7 @@ class Board {
      * @returns {boolean}
      */
     #tryTag(com){
-        let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D)))?$`, "g");
+        let r = new RegExp(`^Tag(\{(?<tag>[^;]*)\})(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]{1,2}))?(\.(?<anchor>(N|NE|E|SE|S|SW|W|NW|C)))?(?<size>s[0-9]{1,2})?(r(?<angle>(R|L|D|[0-9]+)))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
@@ -296,6 +296,7 @@ class Board {
             case 'R': text.turnClockWise(); break;
             case 'L': text.turnCounterClockWise(); break;
             case 'D': text.turnClockWise().turnClockWise(); break;
+            default: text.turnClockWise(parseInt(angle));
         }
         return true;
     }
