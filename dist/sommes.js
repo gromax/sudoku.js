@@ -3,7 +3,7 @@ let coms = [
     'Tag{16>}bg:k.Es40r45',
     'Tag{10>}bi:k.Es40r45',
     'Tag{<21}bk:k.Ws40r315',
-    'Tag{71>}db:k.Es40r315',
+    'Tag{3>}db:k.Es40r315',
     'Tag{25>}fb:k.Es40r315',
     'Tag{30>}gb:k.Es40r315',
     'Tag{<10}kd:k.Ws40r45',
