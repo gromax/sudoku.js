@@ -32,7 +32,9 @@ const COLORS = [
     "#f58a07",
     "#eb42df",
     "#b207f5",
-    '#ffffff'
+    '#ffffff',
+    '#9d97f0',
+    '#8cc408'
 ]
 
 export { CELLSIZE, GRIDSIZE, SUBGRIDSIZE, DIRECTION, ANCRES, COLORS };
