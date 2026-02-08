@@ -179,7 +179,7 @@ class Pad {
         ], eventsGest);
 
         let buttonsColor = [];
-        for (let i=0; i<10; i++){
+        for (let i=0; i<12; i++){
             let col = i%3;
             let line = (i-col)/3
             let c = COLORS[i];
