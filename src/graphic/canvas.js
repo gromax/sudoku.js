@@ -241,14 +241,15 @@ class Canvas {
      * @param {number} height Nombre de lignes
      * @param {number} width Nombre de colonnes
      * @param {Object} stroke options pour le style de ligne
-     * @param {number} step taille du motif de grille en nombre de cases
-     * @returns 
+     * @param {number} xstep taille du motif de grille, horizontalement, en nombre de cases
+     * @param {number} ystep taille du motif de grille, verticalement, en nombre de cases
+    * @returns 
      */
-    grid(height, width, stroke, step) {
+    grid(height, width, stroke, xstep, ystep) {
         let cells = [];
-        for (let line=0; line<height; line+=step) {
-            for (let col=0; col<width; col+=step) {
-                let c = this.square(line, col, step);
+        for (let line=0; line<height; line+=ystep) {
+            for (let col=0; col<width; col+=xstep) {
+                let c = this.rect(line, col, xstep, ystep);
                 c.fill('none').stroke(stroke);
                 cells.push(c);
             }
