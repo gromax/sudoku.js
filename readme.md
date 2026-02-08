@@ -136,8 +136,9 @@ Format de la commande
 
 Dessine un cercle ou un disque.
 
-Format de la commande : `Di<COORDS><COL2?><#2?>`
+Format de la commande : `Di<COORDS><COL2?><#2?>` ou `di<COORDS><COL2?><#2?>`
 
+* `Di` pour un gros trait, `Di` pour un trait fin.
 * Ici `<COORDS>` ne devrait être constitué que d'une paire
 * La première couleur désigne le trait, la seconde désigne le remplissage
 * le dernier item `<#2>` est un nombre de 1 ou 2 chiffres représentant la taille en % de la case. En l'absence de cette information, la valeur par défaut est 100 %.
@@ -148,7 +149,7 @@ Dessine une cage, c'est à dire une zone encadrée en pointillé comme dans Kenk
 
 Format de la commande : `Cag<COORDS><COL2?><:#2?><-|=?><{tag}?>`
 
-  * `<COORDS>` indique les positions des sommets de la cage,
+  * `<COORDS>` indique les cases à cager,
   * La première couleur indique la couleur du trait, la 2e est la couleur du fond,
   * `<:#2?>`, composé de deux chiffres, est la marge en %. Par défaut 10 %.
   * `<-|=?>` indique le type de ligne désiré. `=` pour un gros trait continu, `-` pour un trait fin continu et rien pour un trait fin pointillé.
