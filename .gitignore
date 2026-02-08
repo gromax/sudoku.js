@@ -126,3 +126,4 @@ out
 .pnp.*
 dist/up.js
 dist/index.js
+dist/exemples/*
