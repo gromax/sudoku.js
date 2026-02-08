@@ -166,7 +166,7 @@ class Board {
      * Di: identifie la commande
      * BC: position
      * [:gb]:couleur, première stroke Color, second fill color
-     * 45: diamètre en % de l'unité
+     * [45]: diamètre en % de l'unité
      * @param {string} com 
      * @returns {boolean}
      */
@@ -334,10 +334,12 @@ class Board {
      */
     #drawGrid(type) {
         if ((type == 'G') || (type=='S')){
-            this.#canvas.grid(this.#height, this.#width, Board.GRIDSTROKE, 1);
+            this.#canvas.grid(this.#height, this.#width, Board.GRIDSTROKE, 1, 1);
         }
         if (type == 'S') {
-            this.#canvas.grid(this.#height, this.#width, Board.GRIDTHICKSTROKE, 3);
+            const xstep = Math.floor(this.#width/3)
+            const ystep = Math.floor(this.#height/3)
+            this.#canvas.grid(this.#height, this.#width, Board.GRIDTHICKSTROKE, xstep, ystep)
         }
     }
     
