@@ -179,7 +179,7 @@ class Board {
      * @returns {boolean}
      */
     #tryDisc(com){
-        let r = new RegExp(`^Di(?<chaine>(${Coords.REGEX}){1})(:(?<color>[a-zA-Z_]{1,2}))?(?<size>[0-9]{1,2})?$`, "g");
+        let r = new RegExp(`^[D|d]i(?<chaine>(${Coords.REGEX}){1})(:(?<color>[a-zA-Z_]{1,2}))?(?<size>[0-9]{1,2})?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
@@ -191,8 +191,8 @@ class Board {
         let stringSize = m.groups.size || '100';
         let size = parseInt(stringSize)/100;
         console.log(size, coords, fillColor, strokeColor);
-        this.#layers.decorations.disc(coords[0].line, coords[0].col, size).fill(fillColor).stroke({width:3, color:strokeColor});
-        console.log("pwet");
+        const w = (com[0]=='D') ? 6 : 3;
+        this.#layers.decorations.disc(coords[0].line, coords[0].col, size).fill(fillColor).stroke({width:w, color:strokeColor});
         return true;
     }
     
