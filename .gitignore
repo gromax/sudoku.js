@@ -127,4 +127,6 @@ out
 dist/up.js
 dist/index.js
 dist/exemples/*
+dist/files/*
+dist/game.js
 dist/qrcode.png
