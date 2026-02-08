@@ -6,6 +6,14 @@ import { Coords } from '../utils/coords';
 import { Events } from '../utils/events';
 import { CELLSIZE } from '../constantes';
 
+const SUDOKU_STEP = {
+    9: { xstep: 3, ystep:3 },
+    6: { xstep: 3, ystep:2 },
+    4: { xstep: 2, ystep:2 },
+    16: { xstep:4, ystep:4 }
+}
+
+
 /**
  * @typedef {Object.<string,Canvas>} Layers
  */
@@ -337,8 +345,15 @@ class Board {
             this.#canvas.grid(this.#height, this.#width, Board.GRIDSTROKE, 1, 1);
         }
         if (type == 'S') {
-            const xstep = Math.floor(this.#width/3)
-            const ystep = Math.floor(this.#height/3)
+            if (this.#height != this.#width) {
+                console.log("[S] : Une grille de sudoku recquiert une grille carrée.")
+            }
+            const steps = SUDOKU_STEP[this.#height]
+            if (typeof steps === "undefined") {
+                console.log(`[S] : Je ne sais pas traiter les secteurs sudoku pour la taille ${this.#height}.`)
+            }
+            const xstep = steps.xstep
+            const ystep = steps.ystep
             this.#canvas.grid(this.#height, this.#width, Board.GRIDTHICKSTROKE, xstep, ystep)
         }
     }
