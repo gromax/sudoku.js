@@ -20,6 +20,9 @@ class Game {
     /** @type {Events} */
     #eventsGest
 
+    /** @type {Pad} */
+    #pad
+
     /**
      * constructeur
      * @param {string} idBoard
@@ -28,13 +31,16 @@ class Game {
      * @param {string} commandes
      */
     constructor(idBoard, idPad, format, commandes) {
+        document.addEventListener("keyup", (e) => {
+            this.keyUp(e, e.key)
+        });
         let eventsGest = new Events();
         let board = new Board(idBoard, format, commandes, eventsGest);
         let gSelection = new GSelection(board.layer("selection"), board.width, board.height, eventsGest);
         let history = new History(eventsGest);
         let messages = new Messages(eventsGest);
         let saisie = new Saisie("comment", eventsGest);
-        new Pad(idPad, eventsGest);
+        this.#pad = new Pad(idPad, eventsGest);
   
         this.#cells = new Cells(board.layer("frontCell"), board.layer("backCell"), board.width, board.height);
         this.#borders = new Borders(board.layer("frontCell"), board.width, board.height);
@@ -286,7 +292,14 @@ class Game {
         return this.#eventsGest;
     }
 
-
+    keyUp(e, key) {
+        if (key === "Delete") {
+            this.#eventsGest.triggerEvent("digit", e, { anchor:this.#pad.position })
+        } else  if(["1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key)) {
+            const n = parseInt(key)
+            this.#eventsGest.triggerEvent("digit", e, {digit:n, color:this.#pad.selectedColor, anchor:this.#pad.position})
+        }
+    }
 }
 
 export { Game }
