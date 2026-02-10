@@ -293,6 +293,9 @@ class Game {
     }
 
     keyUp(e, key) {
+        if (!e.shiftKey) {
+            return
+        }
         if (key === "Delete") {
             this.#eventsGest.triggerEvent("digit", e, { anchor:this.#pad.position })
         } else  if(["1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key)) {
