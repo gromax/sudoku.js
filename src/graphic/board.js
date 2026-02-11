@@ -256,14 +256,15 @@ class Board {
      * @returns {boolean}
      */
     #tryDigit(com){
-        let r = new RegExp(`^(?<digit>[0-9])(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]))?$`, "g");
+        let r = new RegExp(`^(?<digit>[0-9])(?<pos>${Coords.REGEX})(:(?<color>[a-zA-Z_]))?(?:s(?<size>[0-9]{1,2}))?$`, "g");
         let m = r.exec(com);
         if (m === null) {
             return false;
         }
         let color = Canvas.color(m.groups.color || '_');
         let coord = Coords.paireToCoord(m.groups.pos);
-        let text = this.layer("decorations").text(m.groups.digit, coord, 0.8);
+        let size = Number(m.groups.size || '80') / 100
+        let text = this.layer("decorations").text(m.groups.digit, coord, size);
         text.anchor('C');
         text.stroke(color);
         text.fill('none');

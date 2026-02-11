@@ -162,11 +162,12 @@ Exemple : `Cageefeff:g:0-{2x}`
 
 Place un chiffre.
 
-Format de la commande : `<Digit><COORDS><COL?>`
+Format de la commande : `<Digit><COORDS><COL?><s#2?>`
 
   * `<Digit>` est naturellement le chiffre de 0 à 9,
   * `<COORDS>` ne devrait contenir qu'une paire,
   * `<COL?>` indique la couleur
+  * `<s#2?>` indique une taille en %. Par défait 80.
 
 ##### Tag
 
